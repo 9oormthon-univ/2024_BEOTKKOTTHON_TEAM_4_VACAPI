@@ -1,11 +1,10 @@
-export class ErrorResponse {
-    message: string;
-    code: string;
-    data?: any;
+import {BaseResponse} from "./response";
 
-    constructor(message: string, code: string, data?: any) {
-        this.message = message;
+export class ErrorResponse extends BaseResponse {
+    code!: string;
+
+    constructor(message: string, code: string, field?: string[]) {
+        super(false, message, field);
         this.code = code;
-        this.data = data;
     }
 }
