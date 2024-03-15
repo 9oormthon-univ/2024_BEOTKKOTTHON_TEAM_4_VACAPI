@@ -3,6 +3,12 @@ export type CodefTokenResponse = {
 }
 
 
-export type CodefErrorResponse = {
-    code: string,
+export type CodefResponse<T> = {
+    result: {
+        code: string,
+        extraMessage: string,
+        message: string,
+        transactionId: string,
+        data: T,
+    },
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import {CodefTokenResponse} from "./types/codef";
+import {CodefResponse, CodefTokenResponse} from "./types/codef";
 import {Credential} from "./types/credential";
 import {CredentialManager} from "./credential";
 import NodeRSA from "node-rsa";
@@ -48,7 +48,7 @@ export class CodefService {
         return key.encrypt(password, "base64")
     }
 
-    private async request(url: string, data: any): Promise<any> {
+    private async request(url: string, data: any): Promise<CodefResponse<any>> {
         const response = await axios.post(url, data, {
             headers: {
                 "Authorization": `Bearer ${this.credential.accessToken}`
@@ -63,6 +63,6 @@ export class CodefService {
             return this.request(url, data)
         }
 
-        return decodeURIComponent(body);
+        return JSON.parse(decodeURIComponent(body).replace(/\+/g, ' ')) as CodefResponse<any>;
     }
 }
