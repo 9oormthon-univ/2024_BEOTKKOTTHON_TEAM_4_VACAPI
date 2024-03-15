@@ -2,7 +2,7 @@ import axios from "axios";
 import {CodefTokenResponse} from "./types/codef";
 import {Credential} from "./types/credential";
 import {CredentialManager} from "./credential";
-import * as NodeRSA from "node-rsa";
+import NodeRSA from "node-rsa";
 
 
 export class CodefService {
