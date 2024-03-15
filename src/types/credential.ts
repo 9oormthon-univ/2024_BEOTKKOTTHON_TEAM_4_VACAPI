@@ -3,8 +3,7 @@ export type Credential = {
     publicKey: string,
     clientId: string,
     clientSecret: string,
-    isValid: boolean,
-    isActivated: boolean
+    accessToken: string
 }
 
 export type DynamoDBCredentialItem = {
@@ -12,8 +11,7 @@ export type DynamoDBCredentialItem = {
     publicKey: { S: string },
     clientId: { S: string },
     clientSecret: { S: string },
-    isValid: { BOOL: boolean },
-    isActivated: { BOOL: boolean }
+    accessToken: { S: string }
 }
 
 export function isValidCredentialItem(item: any): item is DynamoDBCredentialItem {
@@ -22,7 +20,6 @@ export function isValidCredentialItem(item: any): item is DynamoDBCredentialItem
         typeof item.clientSecret?.S === 'string' &&
         typeof item.id?.S === 'string' &&
         typeof item.publicKey?.S === 'string' &&
-        typeof item.isValid?.BOOL === 'boolean' &&
-        typeof item.isActivated?.BOOL === 'boolean'
+        typeof item.accessToken?.S === 'string'
     )
 }
