@@ -3,6 +3,8 @@ import {CodefResponse, CodefTokenResponse} from "./types/codef";
 import {Credential} from "./types/credential";
 import {CredentialManager} from "./credential";
 import NodeRSA from "node-rsa";
+import {DomainException} from "./exceptions/DomainException";
+import {ErrorCode} from "./types/error";
 
 
 export class CodefService {
@@ -31,13 +33,16 @@ export class CodefService {
     }
 
     async getMyVaccinationRecords(id: string, password: string): Promise<any> {
-        return this.request("https://development.codef.io/v1/kr/public/hw/nip-cdc-list/my-vaccination", {
+        const response = await this.request("https://development.codef.io/v1/kr/public/hw/nip-cdc-list/my-vaccination", {
             organization: "0011",
             loginType: "1",
             userId: id,
             userPassword: this.encryptPassword(password),
             inquiryType: "0"
         })
+
+        if (response.result.code == "CF-12100")
+            throw new DomainException(ErrorCode.ID_NOT_FOUND)
     }
 
     private encryptPassword(password: string): string {

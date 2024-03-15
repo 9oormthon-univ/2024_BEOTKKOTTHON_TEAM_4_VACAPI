@@ -18,7 +18,7 @@ export function validateBody(schema: { new(): any }) {
         if (errors.length > 0) {
             return res.status(400).json(
                 new ErrorResponse("요청을 확인해주세요!",
-                    ErrorCode.VALIDATION_ERROR,
+                    ErrorCode.VALIDATION_ERROR.message,
                     errors.map((e) => e.property)
                 )
             )

@@ -1,8 +1,9 @@
 import {DynamoDBClient, ScanCommand} from "@aws-sdk/client-dynamodb";
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb";
 import {Credential, isValidCredentialItem} from "./types/credential";
-import {CredentialException} from "./exceptions/CredentialException";
 import {CodefService} from "./codef";
+import {DomainException} from "./exceptions/DomainException";
+import {ErrorCode} from "./types/error";
 
 export class CredentialManager {
     private client = new DynamoDBClient({
@@ -15,14 +16,16 @@ export class CredentialManager {
     })
 
     private docClient = DynamoDBDocumentClient.from(this.client);
-    
+
     async getCredential(): Promise<Credential> {
         const {Items} = await this.docClient.send(
             new ScanCommand({
                 TableName: "credentialsTable"
             })
         )
-        if (!Items || !isValidCredentialItem(Items[0])) throw new CredentialException("사용 가능한 Credential이 없습니다.")
+        if (!Items || !isValidCredentialItem(Items[0])) throw new DomainException(
+            ErrorCode.VALIDATION_ERROR
+        )
 
         return {
             id: Items[0].id.S,
