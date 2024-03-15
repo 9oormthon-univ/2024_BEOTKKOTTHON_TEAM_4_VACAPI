@@ -15,8 +15,7 @@ export class CredentialManager {
     })
 
     private docClient = DynamoDBDocumentClient.from(this.client);
-
-
+    
     async getCredential(): Promise<Credential> {
         const {Items} = await this.docClient.send(
             new ScanCommand({

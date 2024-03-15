@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "@slack/web-api": "^7.0.2",
     "aws-sdk": "^2.1578.0",
     "axios": "^1.6.7",
     "dynamodb-localhost": "^0.0.9",

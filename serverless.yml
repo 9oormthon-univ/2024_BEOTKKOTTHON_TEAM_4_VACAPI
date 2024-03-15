@@ -12,6 +12,9 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  environment:
+    SLACK_TOKEN: ${env:SLACK_TOKEN}
+    SLACK_CHANNEL: ${env:SLACK_CHANNEL}
 
 functions:
   api:
