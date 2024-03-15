@@ -43,6 +43,8 @@ export class CodefService {
 
         if (response.result.code == "CF-12100")
             throw new DomainException(ErrorCode.ID_NOT_FOUND)
+
+        return response
     }
 
     private encryptPassword(password: string): string {
