@@ -2,8 +2,11 @@ org: hyungju
 app: vacgom-codef-api
 service: vacgom-codef-api
 frameworkVersion: '3'
+useDotenv: true
 
 plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb
   - serverless-offline
 
 provider:
@@ -12,6 +15,34 @@ provider:
 
 functions:
   api:
-    handler: index.handler
+    handler: src/index.handler
     events:
       - httpApi: '*'
+
+resources:
+  Resources:
+    credentialsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: credentialsTable
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+custom:
+  serverless-dynamodb:
+    start:
+      seed: true
+      migrate: true
+
+    seed:
+      credentialsTable:
+        sources:
+          - table: credentialsTable
+            sources: [ ./credentialsTable.json ]
