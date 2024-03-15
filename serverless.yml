@@ -1,0 +1,17 @@
+org: hyungju
+app: vacgom-codef-api
+service: vacgom-codef-api
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi: '*'
