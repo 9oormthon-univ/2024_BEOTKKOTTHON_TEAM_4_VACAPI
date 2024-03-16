@@ -77,7 +77,6 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
         const codefService = new CodefService(credential)
 
         if (dto.type === "SMS") {
-            console.log(token)
             if (!token.secureNo) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
             const response = await codefService.challengeSMS(token, dto)
 
@@ -117,7 +116,7 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
     async (req: Request & { body: ResetPasswordRequest }, res: Response) => {
         const userId = req.userId
         if (!userId) throw new DomainException(ErrorCode.AUTH_MISSING)
-        
+
         const dto: ResetPasswordRequest = req.body
 
         const requestTokenRepository = new RequestTokenRepository()
@@ -154,7 +153,6 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
     }
 )
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.log(err, err instanceof DomainException)
     if (err instanceof DomainException) {
         res.status(400).json(
             new ErrorResponse(
