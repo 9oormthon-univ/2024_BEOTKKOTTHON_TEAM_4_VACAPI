@@ -15,3 +15,12 @@ export class SecureNoData {
 
 export class CodefSecureNoResponse extends CodefResponse<SecureNoData> {
 }
+
+export class ChangePasswordResponseData {
+    resLoginId!: string;
+    resRegistrationStatus!: '1' | '0';
+    resResultDesc!: string;
+}
+
+export class CodefChangePasswordResponse extends CodefResponse<ChangePasswordResponseData> {
+}

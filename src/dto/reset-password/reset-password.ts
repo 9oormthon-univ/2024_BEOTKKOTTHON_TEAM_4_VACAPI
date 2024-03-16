@@ -82,3 +82,6 @@ export class ChallengeResponse<T> {
 }
 
 
+export class ResetPasswordResponse {
+    userId!: string;
+}

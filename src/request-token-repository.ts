@@ -29,6 +29,7 @@ export class RequestTokenRepository {
                 newPassword: {S: token.newPassword},
                 telecom: {S: token.telecom},
                 phoneNumber: {S: token.phoneNumber},
+                secureNo: {S: token.secureNo ?? ""},
             },
         })
 
@@ -72,6 +73,7 @@ export class RequestTokenRepository {
             newPassword: Item.newPassword.S,
             telecom: Item.telecom.S,
             phoneNumber: Item.phoneNumber.S,
+            secureNo: Item.secureNo.S
         }
     }
 }

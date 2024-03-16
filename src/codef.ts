@@ -10,7 +10,7 @@ import {CodefMyVaccinationResponse} from "./dto/codef/my-vaccination";
 import {CodefResponse} from "./dto/codef/response";
 import {MyVaccinationResponse} from "./dto/my-vaccination";
 import {ChallengeRequest, ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
-import {CodefSecureNoResponse} from "./dto/codef/change-password";
+import {CodefChangePasswordResponse, CodefSecureNoResponse} from "./dto/codef/change-password";
 import {RequestToken} from "./types/token";
 
 
@@ -40,7 +40,7 @@ export class CodefService {
     }
 
 
-    async challengeSMS(token: RequestToken, dto: ChallengeRequest): Promise<any> {
+    async challengeSMS(token: RequestToken, dto: ChallengeRequest): Promise<CodefChangePasswordResponse> {
         const response = await this.request(
             "https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw",
             {
@@ -62,10 +62,13 @@ export class CodefService {
                     twoWayTimestamp: token.twoWayTimestamp,
                 }
             }
-        )
+        ) as CodefChangePasswordResponse
 
-        if (response.result.code != "CF-03002")
-            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result)
+        if (response.result.code != "CF-00000")
+            throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
+
+        if (response.data.resRegistrationStatus == "0")
+            throw new DomainException(ErrorCode.REGISTER_FIRST, response.data.resResultDesc)
 
         return response;
     }
@@ -93,8 +96,13 @@ export class CodefService {
             }
         )
 
+        if (response.result.code == "CF-12834")
+            throw new DomainException(ErrorCode.PHONE_VERIFICATION_LOCK)
+        if (response.result.code == "CF-00025")
+            throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+
         if (response.result.code != "CF-03002")
-            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result)
+            throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
 
         return response;
     }

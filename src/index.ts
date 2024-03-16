@@ -9,13 +9,18 @@ import {validateBody} from "./util/validate";
 import {MyVaccinationRequest} from "./dto/my-vaccination";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorResponse} from "./dto/error";
-import {ChallengeRequest, ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
-import {CodefSecureNoResponse} from "./dto/codef/change-password";
+import {
+    ChallengeRequest,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
+    Telecom
+} from "./dto/reset-password/reset-password";
 import {BaseResponse} from "./dto/response";
 import {SecureNoResponse} from "./dto/reset-password/secure-no";
 import {RequestToken} from "./types/token";
 import {RequestTokenRepository} from "./request-token-repository";
 import {ErrorCode} from "./types/error";
+import {SmsResponse} from "./dto/reset-password/sms";
 
 require("express-async-errors")
 
@@ -52,16 +57,25 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
         const requestTokenRepository = new RequestTokenRepository()
 
         const token = await requestTokenRepository.getToken("1")
-        console.log(token)
-        if (!token) throw new DomainException(ErrorCode.VALIDATION_ERROR, "SECURE_NO_NOT_FOUND")
+        if (!token) throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
 
         const credentialManager = new CredentialManager()
         const credential = await credentialManager.getCredential()
         const codefService = new CodefService(credential)
 
         if (dto.type === "SMS") {
+            console.log(token)
+            if (!token.secureNo) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
             const response = await codefService.challengeSMS(token, dto)
-            res.json(response)
+
+            res.json(new BaseResponse<ResetPasswordResponse>(
+                true,
+                "비밀번호 변경 완료",
+                {
+                    userId: response.data.resLoginId
+                }
+            ))
+            
         } else if (dto.type === "SECURE_NO") {
             const response = await codefService.challengeSecureNo(token, dto)
 
@@ -72,7 +86,16 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
                 }
             )
 
-            res.json(response)
+            res.json(
+                new BaseResponse<SmsResponse>(
+                    true,
+                    "요청이 완료되었습니다.",
+                    {
+                        type: "SMS",
+                        validUntil: token.expireAt
+                    }
+                )
+            )
         }
 
     })
@@ -81,8 +104,6 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
     async (req: Request & { body: ResetPasswordRequest }, res: Response) => {
         const dto: ResetPasswordRequest = req.body
 
-        console.log(dto)
-
         const requestTokenRepository = new RequestTokenRepository()
 
         const credentialManager = new CredentialManager()
@@ -90,31 +111,30 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
         const codefService = new CodefService(credential)
 
         const response = await codefService.requestResetPassword(dto)
-        if (response instanceof CodefSecureNoResponse) {
-            const token: RequestToken = {
-                userId: "1",
-                jobIndex: response.data.jobIndex,
-                threadIndex: response.data.threadIndex,
-                jti: response.data.jti,
-                twoWayTimestamp: response.data.twoWayTimestamp,
-                expireAt: response.data.twoWayTimestamp + 170,
-                userName: dto.userName,
-                identity: dto.identity,
-                newPassword: codefService.encryptPassword(dto.newPassword),
-                telecom: Telecom[dto.telecom],
-                phoneNumber: dto.phoneNumber,
-            }
 
-            await requestTokenRepository.saveToken(token)
-
-            res.json(
-                new BaseResponse<SecureNoResponse>(true, "보안 코드를 입력해주세요.", {
-                    secureNoImage: response.data.extraInfo.reqSecureNo,
-                    validUntil: response.data.twoWayTimestamp + 170,
-                    type: "SECURE_NO"
-                })
-            )
+        const token: RequestToken = {
+            userId: "1",
+            jobIndex: response.data.jobIndex,
+            threadIndex: response.data.threadIndex,
+            jti: response.data.jti,
+            twoWayTimestamp: response.data.twoWayTimestamp,
+            expireAt: response.data.twoWayTimestamp + 170,
+            userName: dto.userName,
+            identity: dto.identity,
+            newPassword: codefService.encryptPassword(dto.newPassword),
+            telecom: Telecom[dto.telecom],
+            phoneNumber: dto.phoneNumber,
         }
+
+        await requestTokenRepository.saveToken(token)
+
+        res.json(
+            new BaseResponse<SecureNoResponse>(true, "보안 코드를 입력해주세요.", {
+                secureNoImage: response.data.extraInfo.reqSecureNo,
+                validUntil: response.data.twoWayTimestamp + 170,
+                type: "SECURE_NO"
+            })
+        )
     }
 )
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
