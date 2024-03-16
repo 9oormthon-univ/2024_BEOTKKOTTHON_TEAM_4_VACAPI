@@ -33,6 +33,10 @@ app.use(bodyParser.json());
 app.use("/vaccination", verifyToken);
 app.use("/reset-password/*", verifyToken);
 
+app.get("/", (req, res) => {
+    res.send("VACAPI 💉🐻‍❄️")
+})
+
 app.get("/token", (req, res) => {
     if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined")
 
