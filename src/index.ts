@@ -9,6 +9,7 @@ import {validateBody} from "./util/validate";
 import {MyVaccinationRequest} from "./dto/my-vaccination";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorResponse} from "./dto/error";
+import {verifyToken} from "./util/auth";
 
 require("express-async-errors")
 
@@ -16,6 +17,7 @@ require("express-async-errors")
 const app = express();
 
 app.use(bodyParser.json());
+app.use(verifyToken);
 
 app.get("/test", (req, res) => {
     throw Error("의도적인에러")

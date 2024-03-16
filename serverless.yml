@@ -15,6 +15,7 @@ provider:
   environment:
     SLACK_TOKEN: ${env:SLACK_TOKEN}
     SLACK_CHANNEL: ${env:SLACK_CHANNEL}
+    JWT_SECRET: ${env:JWT_SECRET}
 
 functions:
   api:
