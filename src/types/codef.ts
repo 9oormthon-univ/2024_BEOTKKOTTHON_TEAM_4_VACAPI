@@ -1,3 +1,3 @@
-export type CodefTokenResponse = {
-    access_token: string,
+export interface CodefTokenResponse {
+  access_token: string
 }

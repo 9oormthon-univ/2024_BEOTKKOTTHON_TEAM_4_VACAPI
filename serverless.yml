@@ -54,7 +54,6 @@ custom:
         sources:
           - table: credentialsTable
             sources: [ ./credentialsTable.json ]
-
 provider:
   name: aws
   runtime: nodejs18.x

@@ -1,10 +1,10 @@
-import {BaseResponse} from "./response";
+import { BaseResponse } from './response'
 
 export class ErrorResponse extends BaseResponse<any> {
-    code!: string;
+  code!: string
 
-    constructor(message: string, code: string, field?: string[]) {
-        super(false, message, field);
-        this.code = code;
-    }
+  constructor (message: string, code: string, field?: any) {
+    super(false, message, field)
+    this.code = code
+  }
 }
