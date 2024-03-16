@@ -148,7 +148,7 @@ export class CodefService {
             userId: id,
             userPassword: this.encryptPassword(password),
             inquiryType: "0"
-        })
+        }, true)
 
         if (response.result.code == "CF-12100")
             throw new DomainException(ErrorCode.ID_NOT_FOUND)
@@ -157,6 +157,7 @@ export class CodefService {
             throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
 
         const codefResponse = plainToInstance(CodefMyVaccinationResponse, response)
+
 
         return MyVaccinationResponse.fromCodefResponse(codefResponse)
     }
@@ -169,7 +170,7 @@ export class CodefService {
         return key.encrypt(password, "base64")
     }
 
-    private async request(url: string, data: any): Promise<CodefResponse<any>> {
+    private async request(url: string, data: any, replaceWhiteSpace = false): Promise<CodefResponse<any>> {
         const response = await axios.post(url, data, {
             headers: {
                 "Authorization": `Bearer ${this.credential.accessToken}`
@@ -184,9 +185,17 @@ export class CodefService {
             return this.request(url, data)
         }
 
-        return JSON.parse(
-            decodeURIComponent(body)
-                .replace(/\\r\\n\s+상세보기/g, '')
-        ) as CodefResponse<any>;
+        if (replaceWhiteSpace) {
+            return JSON.parse(
+                decodeURIComponent(body)
+                    .replace(/\+/g, ' ')
+                    .replace(/\\r\\n\s+상세보기/g, '')
+            )
+        } else {
+            return JSON.parse(
+                decodeURIComponent(body)
+                    .replace(/\\r\\n\s+상세보기/g, '')
+            )
+        }
     }
 }
