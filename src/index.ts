@@ -21,6 +21,8 @@ import {RequestToken} from "./types/token";
 import {RequestTokenRepository} from "./request-token-repository";
 import {ErrorCode} from "./types/error";
 import {SmsResponse} from "./dto/reset-password/sms";
+import {verifyToken} from "./util/auth";
+import jwt from "jsonwebtoken";
 
 require("express-async-errors")
 
@@ -28,10 +30,14 @@ require("express-async-errors")
 const app = express();
 
 app.use(bodyParser.json());
-//app.use(verifyToken);
+app.use("/vaccination", verifyToken);
+app.use("/reset-password/*", verifyToken);
 
-app.get("/test", (req, res) => {
-    throw Error("의도적인에러")
+app.get("/token", (req, res) => {
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined")
+
+    const userId = "testuser"
+    res.send(jwt.sign({subject: userId}, process.env.JWT_SECRET))
 })
 
 app.post("/vaccination", validateBody(MyVaccinationRequest),
@@ -75,7 +81,7 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
                     userId: response.data.resLoginId
                 }
             ))
-            
+
         } else if (dto.type === "SECURE_NO") {
             const response = await codefService.challengeSecureNo(token, dto)
 
