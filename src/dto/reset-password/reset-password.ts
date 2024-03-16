@@ -37,7 +37,46 @@ export class ResetPasswordRequest {
     phoneNumber!: string;
 }
 
-export class ResetPasswordResponse<T> {
+
+export class RequestSMSRequest {
+    @IsString()
+    @IsNotEmpty()
+    userName!: string;
+
+    @IsNotEmpty()
+    @IsNumberString()
+    @Length(9, 9)
+    identity!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @Length(9, 20)
+    newPassword!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @IsEnum(Telecom)
+    telecom!: Telecom;
+
+    @IsNumberString()
+    @IsNotEmpty()
+    @Length(11, 11)
+    phoneNumber!: string;
+}
+
+
+export class ChallengeRequest {
+    @IsNotEmpty()
+    @IsString()
+    type!: ChallengeType;
+
+    @IsNumberString()
+    @IsNotEmpty()
+    code!: string;
+}
+
+
+export class ChallengeResponse<T> {
     type!: ChallengeType;
     data!: T;
 }

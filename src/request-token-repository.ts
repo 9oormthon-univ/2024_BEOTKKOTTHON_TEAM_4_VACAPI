@@ -24,6 +24,11 @@ export class RequestTokenRepository {
                 jti: {S: token.jti},
                 twoWayTimestamp: {N: token.twoWayTimestamp.toString()},
                 expireAt: {N: token.expireAt.toString()},
+                userName: {S: token.userName},
+                identity: {S: token.identity},
+                newPassword: {S: token.newPassword},
+                telecom: {S: token.telecom},
+                phoneNumber: {S: token.phoneNumber},
             },
         })
 
@@ -41,7 +46,19 @@ export class RequestTokenRepository {
         )
 
         if (!Item) return null
-        if (!Item.userId.S || !Item.jobIndex.N || !Item.threadIndex.N || !Item.jti.S || !Item.twoWayTimestamp.N || !Item.expireAt.N) return null
+        if (
+            !Item.userId.S ||
+            !Item.jobIndex.N ||
+            !Item.threadIndex.N ||
+            !Item.jti.S ||
+            !Item.twoWayTimestamp.N ||
+            !Item.expireAt.N ||
+            !Item.userName.S ||
+            !Item.identity.S ||
+            !Item.newPassword.S ||
+            !Item.telecom.S ||
+            !Item.phoneNumber.S
+        ) return null
 
         return {
             userId: Item.userId.S,
@@ -50,6 +67,11 @@ export class RequestTokenRepository {
             jti: Item.jti.S,
             twoWayTimestamp: parseInt(Item.twoWayTimestamp.N),
             expireAt: parseInt(Item.expireAt.N),
+            userName: Item.userName.S,
+            identity: Item.identity.S,
+            newPassword: Item.newPassword.S,
+            telecom: Item.telecom.S,
+            phoneNumber: Item.phoneNumber.S,
         }
     }
 }

@@ -5,4 +5,11 @@ export type RequestToken = {
     jti: string;
     twoWayTimestamp: number;
     expireAt: number;
+    userName: string;
+    identity: string;
+    newPassword: string;
+    telecom: string;
+    phoneNumber: string;
+    secureNo?: string;
 }
+

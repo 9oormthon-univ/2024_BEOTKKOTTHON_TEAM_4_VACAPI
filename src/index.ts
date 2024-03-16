@@ -9,12 +9,13 @@ import {validateBody} from "./util/validate";
 import {MyVaccinationRequest} from "./dto/my-vaccination";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorResponse} from "./dto/error";
-import {ResetPasswordRequest} from "./dto/reset-password/reset-password";
+import {ChallengeRequest, ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
 import {CodefSecureNoResponse} from "./dto/codef/change-password";
 import {BaseResponse} from "./dto/response";
 import {SecureNoResponse} from "./dto/reset-password/secure-no";
 import {RequestToken} from "./types/token";
 import {RequestTokenRepository} from "./request-token-repository";
+import {ErrorCode} from "./types/error";
 
 require("express-async-errors")
 
@@ -43,9 +44,42 @@ app.post("/vaccination", validateBody(MyVaccinationRequest),
     });
 
 
+app.post("/reset-password/challenge", validateBody(ChallengeRequest),
+    async (req: Request & {
+        body: ChallengeRequest
+    }, res: Response) => {
+        const dto: ChallengeRequest = req.body
+        const requestTokenRepository = new RequestTokenRepository()
+
+        const token = await requestTokenRepository.getToken("1")
+        console.log(token)
+        if (!token) throw new DomainException(ErrorCode.VALIDATION_ERROR, "SECURE_NO_NOT_FOUND")
+
+        const credentialManager = new CredentialManager()
+        const credential = await credentialManager.getCredential()
+        const codefService = new CodefService(credential)
+
+        if (dto.type === "SMS") {
+            const response = await codefService.challengeSMS(token, dto)
+            res.json(response)
+        } else if (dto.type === "SECURE_NO") {
+            const response = await codefService.challengeSecureNo(token, dto)
+
+            await requestTokenRepository.saveToken(
+                {
+                    ...token,
+                    secureNo: dto.code
+                }
+            )
+
+            res.json(response)
+        }
+
+    })
+
 app.post("/reset-password", validateBody(ResetPasswordRequest),
     async (req: Request & { body: ResetPasswordRequest }, res: Response) => {
-        const dto = req.body
+        const dto: ResetPasswordRequest = req.body
 
         console.log(dto)
 
@@ -63,11 +97,16 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
                 threadIndex: response.data.threadIndex,
                 jti: response.data.jti,
                 twoWayTimestamp: response.data.twoWayTimestamp,
-                expireAt: response.data.twoWayTimestamp + 170
+                expireAt: response.data.twoWayTimestamp + 170,
+                userName: dto.userName,
+                identity: dto.identity,
+                newPassword: codefService.encryptPassword(dto.newPassword),
+                telecom: Telecom[dto.telecom],
+                phoneNumber: dto.phoneNumber,
             }
 
             await requestTokenRepository.saveToken(token)
-            
+
             res.json(
                 new BaseResponse<SecureNoResponse>(true, "보안 코드를 입력해주세요.", {
                     secureNoImage: response.data.extraInfo.reqSecureNo,

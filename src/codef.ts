@@ -9,8 +9,9 @@ import {plainToInstance} from "class-transformer";
 import {CodefMyVaccinationResponse} from "./dto/codef/my-vaccination";
 import {CodefResponse} from "./dto/codef/response";
 import {MyVaccinationResponse} from "./dto/my-vaccination";
-import {ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
+import {ChallengeRequest, ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
 import {CodefSecureNoResponse} from "./dto/codef/change-password";
+import {RequestToken} from "./types/token";
 
 
 export class CodefService {
@@ -38,6 +39,65 @@ export class CodefService {
         this.credential = credential
     }
 
+
+    async challengeSMS(token: RequestToken, dto: ChallengeRequest): Promise<any> {
+        const response = await this.request(
+            "https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw",
+            {
+                organization: "0011",
+                authMethod: "0",
+                userName: token.userName,
+                identity: token.identity,
+                telecom: token.telecom,
+                phoneNo: token.phoneNumber,
+                userPassword: token.newPassword,
+                smsAuthNo: dto.code,
+                secureNo: token.secureNo,
+                secureNoRefresh: "0",
+                is2Way: true,
+                twoWayInfo: {
+                    jobIndex: token.jobIndex,
+                    threadIndex: token.threadIndex,
+                    jti: token.jti,
+                    twoWayTimestamp: token.twoWayTimestamp,
+                }
+            }
+        )
+
+        if (response.result.code != "CF-03002")
+            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result)
+
+        return response;
+    }
+
+    async challengeSecureNo(token: RequestToken, dto: ChallengeRequest): Promise<any> {
+        const response = await this.request(
+            "https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw",
+            {
+                organization: "0011",
+                authMethod: "0",
+                userName: token.userName,
+                identity: token.identity,
+                telecom: token.telecom,
+                phoneNo: token.phoneNumber,
+                userPassword: token.newPassword,
+                secureNo: dto.code,
+                secureNoRefresh: "0",
+                is2Way: true,
+                twoWayInfo: {
+                    jobIndex: token.jobIndex,
+                    threadIndex: token.threadIndex,
+                    jti: token.jti,
+                    twoWayTimestamp: token.twoWayTimestamp,
+                }
+            }
+        )
+
+        if (response.result.code != "CF-03002")
+            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result)
+
+        return response;
+    }
 
     async requestResetPassword(dto: ResetPasswordRequest): Promise<CodefSecureNoResponse> {
         const response = await this.request(
@@ -84,7 +144,7 @@ export class CodefService {
         return MyVaccinationResponse.fromCodefResponse(codefResponse)
     }
 
-    private encryptPassword(password: string): string {
+    public encryptPassword(password: string): string {
         const key = new NodeRSA();
         key.importKey(this.credential.publicKey, 'pkcs8-public');
         key.setOptions({encryptionScheme: 'pkcs1'});
@@ -109,7 +169,6 @@ export class CodefService {
 
         return JSON.parse(
             decodeURIComponent(body)
-                .replace(/\+/g, ' ')
                 .replace(/\\r\\n\s+상세보기/g, '')
         ) as CodefResponse<any>;
     }
