@@ -13,6 +13,8 @@ import {ResetPasswordRequest} from "./dto/reset-password/reset-password";
 import {CodefSecureNoResponse} from "./dto/codef/change-password";
 import {BaseResponse} from "./dto/response";
 import {SecureNoResponse} from "./dto/reset-password/secure-no";
+import {RequestToken} from "./types/token";
+import {RequestTokenRepository} from "./request-token-repository";
 
 require("express-async-errors")
 
@@ -46,12 +48,26 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
         const dto = req.body
 
         console.log(dto)
+
+        const requestTokenRepository = new RequestTokenRepository()
+
         const credentialManager = new CredentialManager()
         const credential = await credentialManager.getCredential()
         const codefService = new CodefService(credential)
 
         const response = await codefService.requestResetPassword(dto)
         if (response instanceof CodefSecureNoResponse) {
+            const token: RequestToken = {
+                userId: "1",
+                jobIndex: response.data.jobIndex,
+                threadIndex: response.data.threadIndex,
+                jti: response.data.jti,
+                twoWayTimestamp: response.data.twoWayTimestamp,
+                expireAt: response.data.twoWayTimestamp + 170
+            }
+
+            await requestTokenRepository.saveToken(token)
+            
             res.json(
                 new BaseResponse<SecureNoResponse>(true, "보안 코드를 입력해주세요.", {
                     secureNoImage: response.data.extraInfo.reqSecureNo,
