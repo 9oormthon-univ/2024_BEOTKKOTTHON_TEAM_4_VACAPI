@@ -1,5 +1,4 @@
-require("express-async-errors")
-
+import {sendSlackMessage} from "./util/slack";
 import * as bodyParser from "body-parser";
 import {CodefService} from "./codef";
 import {CredentialManager} from "./credential";
@@ -11,11 +10,16 @@ import {MyVaccinationRequest} from "./dto/my-vaccination";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorResponse} from "./dto/error";
 
+require("express-async-errors")
+
 
 const app = express();
 
 app.use(bodyParser.json());
 
+app.get("/test", (req, res) => {
+    throw Error("의도적인에러")
+})
 
 app.post("/vaccination", validateBody(MyVaccinationRequest),
     async (req: Request & {
@@ -43,6 +47,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             )
         )
     } else {
+        sendSlackMessage(err.message)
+        res.status(500).json(
+            new ErrorResponse(
+                "서버 에러",
+                "SERVER_ERROR"
+            )
+        )
         next();
     }
 })
