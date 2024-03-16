@@ -3568,6 +3568,11 @@ lodash.isstring@^4.0.1:
   resolved "https://registry.yarnpkg.com/lodash.isstring/-/lodash.isstring-4.0.1.tgz#d527dfb5456eca7cc9bb95d5daeaf88ba54a5451"
   integrity sha512-0wJxfxH1wgO3GrbuP+dTTk7op+6L41QCXbGINEmD+ny/G/eCqGzxyCsh7159S+mgDDcoarnBw6PC1PS5+wUGgw==
 
+lodash.merge@^4.6.2:
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
+  integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
+
 lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
@@ -4559,6 +4564,13 @@ serverless-offline@^13.3.3:
     p-retry "^6.2.0"
     velocityjs "^2.0.6"
     ws "^8.16.0"
+
+serverless-plugin-additional-stacks@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/serverless-plugin-additional-stacks/-/serverless-plugin-additional-stacks-1.6.0.tgz#7e44ffe18ccc22e8a72c437e4b8dc217818f70ab"
+  integrity sha512-ucoJlMY7oSiXhLjdq+Pnr5o3siJ3VyCS7mGKKIGsMFO759YDHL2+6qiRilrmqOWoM3ipIjhl7XMvPar5hrLI5Q==
+  dependencies:
+    lodash.merge "^4.6.2"
 
 serverless-plugin-typescript@^2.1.5:
   version "2.1.5"

@@ -1,18 +1,10 @@
 import {RequestToken} from "./types/token";
-import {DynamoDBClient, GetItemCommand, PutItemCommand} from "@aws-sdk/client-dynamodb";
+import {GetItemCommand, PutItemCommand} from "@aws-sdk/client-dynamodb";
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb";
+import {client} from "./dynamodb";
 
 export class RequestTokenRepository {
-    private client = new DynamoDBClient({
-        region: process.env.AWS_REGION || 'localhost',
-        endpoint: process.env.AWS_ENDPOINT || 'http://0.0.0.0:8000',
-        credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'local',
-            secretAccessKey: process.env.AWS_SECRET || 'local'
-        },
-    })
-
-    private docClient = DynamoDBDocumentClient.from(this.client);
+    private docClient = DynamoDBDocumentClient.from(client);
 
     public async saveToken(token: RequestToken): Promise<void> {
         const command = new PutItemCommand({
