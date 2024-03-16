@@ -1,5 +1,3 @@
-org: hyungju
-app: vacgom-codef-api
 service: vacgom-codef-api
 frameworkVersion: '3'
 useDotenv: true
@@ -12,10 +10,23 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  region: ap-northeast-2
   environment:
     SLACK_TOKEN: ${env:SLACK_TOKEN}
     SLACK_CHANNEL: ${env:SLACK_CHANNEL}
     JWT_SECRET: ${env:JWT_SECRET}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [ requestTokensTable, Arn ]
+        - "Fn::GetAtt": [ credentialsTable, Arn ]
 
 functions:
   api:
