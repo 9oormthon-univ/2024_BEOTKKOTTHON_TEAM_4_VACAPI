@@ -152,7 +152,8 @@ export class CodefService {
 
         if (response.result.code == "CF-12100")
             throw new DomainException(ErrorCode.ID_NOT_FOUND)
-
+        if (response.result.code == "CF-12801")
+            throw new DomainException(ErrorCode.PASSWORD_ERROR)
         if (response.result.code != "CF-00000")
             throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
 
