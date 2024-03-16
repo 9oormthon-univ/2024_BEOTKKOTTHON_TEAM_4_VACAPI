@@ -9,7 +9,10 @@ import {validateBody} from "./util/validate";
 import {MyVaccinationRequest} from "./dto/my-vaccination";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorResponse} from "./dto/error";
-import {verifyToken} from "./util/auth";
+import {ResetPasswordRequest} from "./dto/reset-password/reset-password";
+import {CodefSecureNoResponse} from "./dto/codef/change-password";
+import {BaseResponse} from "./dto/response";
+import {SecureNoResponse} from "./dto/reset-password/secure-no";
 
 require("express-async-errors")
 
@@ -17,7 +20,7 @@ require("express-async-errors")
 const app = express();
 
 app.use(bodyParser.json());
-app.use(verifyToken);
+//app.use(verifyToken);
 
 app.get("/test", (req, res) => {
     throw Error("의도적인에러")
@@ -38,6 +41,27 @@ app.post("/vaccination", validateBody(MyVaccinationRequest),
     });
 
 
+app.post("/reset-password", validateBody(ResetPasswordRequest),
+    async (req: Request & { body: ResetPasswordRequest }, res: Response) => {
+        const dto = req.body
+
+        console.log(dto)
+        const credentialManager = new CredentialManager()
+        const credential = await credentialManager.getCredential()
+        const codefService = new CodefService(credential)
+
+        const response = await codefService.requestResetPassword(dto)
+        if (response instanceof CodefSecureNoResponse) {
+            res.json(
+                new BaseResponse<SecureNoResponse>(true, "보안 코드를 입력해주세요.", {
+                    secureNoImage: response.data.extraInfo.reqSecureNo,
+                    validUntil: response.data.twoWayTimestamp + 170,
+                    type: "SECURE_NO"
+                })
+            )
+        }
+    }
+)
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.log(err, err instanceof DomainException)
     if (err instanceof DomainException) {

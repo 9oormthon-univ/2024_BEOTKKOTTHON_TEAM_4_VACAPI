@@ -9,6 +9,8 @@ import {plainToInstance} from "class-transformer";
 import {CodefMyVaccinationResponse} from "./dto/codef/my-vaccination";
 import {CodefResponse} from "./dto/codef/response";
 import {MyVaccinationResponse} from "./dto/my-vaccination";
+import {ResetPasswordRequest, Telecom} from "./dto/reset-password/reset-password";
+import {CodefSecureNoResponse} from "./dto/codef/change-password";
 
 
 export class CodefService {
@@ -36,6 +38,32 @@ export class CodefService {
         this.credential = credential
     }
 
+
+    async requestResetPassword(dto: ResetPasswordRequest): Promise<CodefSecureNoResponse> {
+        const response = await this.request(
+            "https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw",
+            {
+                organization: "0011",
+                authMethod: "0",
+                userName: dto.userName,
+                identity: dto.identity,
+                telecom: Telecom[dto.telecom].toString(),
+                phoneNo: dto.phoneNumber,
+                timeout: "170",
+                userPassword: this.encryptPassword(dto.newPassword)
+            }
+        )
+
+        if (response.result.code != "CF-03002")
+            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
+
+        if (response.data.method == "secureNo") {
+            return plainToInstance(CodefSecureNoResponse, response)
+        }
+
+        throw new DomainException(ErrorCode.VALIDATION_ERROR, "인증번호를 받을 수 없습니다.")
+    }
+
     async getMyVaccinationRecords(id: string, password: string): Promise<MyVaccinationResponse> {
         const response = await this.request("https://development.codef.io/v1/kr/public/hw/nip-cdc-list/my-vaccination", {
             organization: "0011",
@@ -52,7 +80,7 @@ export class CodefService {
             throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
 
         const codefResponse = plainToInstance(CodefMyVaccinationResponse, response)
-        
+
         return MyVaccinationResponse.fromCodefResponse(codefResponse)
     }
 
