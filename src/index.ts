@@ -66,7 +66,10 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
         const dto: ChallengeRequest = req.body
         const requestTokenRepository = new RequestTokenRepository()
 
-        const token = await requestTokenRepository.getToken("1")
+        const userId = req.userId
+        if (!userId) throw new DomainException(ErrorCode.AUTH_MISSING)
+
+        const token = await requestTokenRepository.getToken(userId)
         if (!token) throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
 
         const credentialManager = new CredentialManager()
@@ -112,6 +115,9 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
 
 app.post("/reset-password", validateBody(ResetPasswordRequest),
     async (req: Request & { body: ResetPasswordRequest }, res: Response) => {
+        const userId = req.userId
+        if (!userId) throw new DomainException(ErrorCode.AUTH_MISSING)
+        
         const dto: ResetPasswordRequest = req.body
 
         const requestTokenRepository = new RequestTokenRepository()
@@ -123,7 +129,7 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
         const response = await codefService.requestResetPassword(dto)
 
         const token: RequestToken = {
-            userId: "1",
+            userId: userId,
             jobIndex: response.data.jobIndex,
             threadIndex: response.data.threadIndex,
             jti: response.data.jti,
