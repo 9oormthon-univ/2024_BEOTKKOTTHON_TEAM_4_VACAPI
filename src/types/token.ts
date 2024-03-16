@@ -8,7 +8,7 @@ export type RequestToken = {
     userName: string;
     identity: string;
     newPassword: string;
-    telecom: string;
+    telecom: number;
     phoneNumber: string;
     secureNo?: string;
 }

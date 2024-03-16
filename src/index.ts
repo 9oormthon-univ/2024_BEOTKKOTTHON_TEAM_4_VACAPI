@@ -132,7 +132,7 @@ app.post("/reset-password", validateBody(ResetPasswordRequest),
             userName: dto.userName,
             identity: dto.identity,
             newPassword: codefService.encryptPassword(dto.newPassword),
-            telecom: Telecom[dto.telecom],
+            telecom: parseInt(Telecom[dto.telecom]),
             phoneNumber: dto.phoneNumber,
         }
 

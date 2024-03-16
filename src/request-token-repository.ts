@@ -19,7 +19,7 @@ export class RequestTokenRepository {
                 userName: {S: token.userName},
                 identity: {S: token.identity},
                 newPassword: {S: token.newPassword},
-                telecom: {S: token.telecom},
+                telecom: {S: token.telecom.toString()},
                 phoneNumber: {S: token.phoneNumber},
                 secureNo: {S: token.secureNo ?? ""},
             },
