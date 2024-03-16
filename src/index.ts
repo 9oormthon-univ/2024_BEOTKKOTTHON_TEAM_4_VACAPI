@@ -76,17 +76,19 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
         const credential = await credentialManager.getCredential()
         const codefService = new CodefService(credential)
 
+        let data;
+
         if (dto.type === "SMS") {
             if (!token.secureNo) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
             const response = await codefService.challengeSMS(token, dto)
 
-            res.json(new BaseResponse<ResetPasswordResponse>(
+            data = new BaseResponse<ResetPasswordResponse>(
                 true,
                 "비밀번호 변경 완료",
                 {
                     userId: response.data.resLoginId
                 }
-            ))
+            )
 
         } else if (dto.type === "SECURE_NO") {
             const response = await codefService.challengeSecureNo(token, dto)
@@ -98,18 +100,19 @@ app.post("/reset-password/challenge", validateBody(ChallengeRequest),
                 }
             )
 
-            res.json(
-                new BaseResponse<SmsResponse>(
-                    true,
-                    "요청이 완료되었습니다.",
-                    {
-                        type: "SMS",
-                        validUntil: token.expireAt
-                    }
-                )
+            data = new BaseResponse<SmsResponse>(
+                true,
+                "요청이 완료되었습니다.",
+                {
+                    type: "SMS",
+                    validUntil: token.expireAt
+                }
             )
+        } else {
+            throw new DomainException(ErrorCode.VALIDATION_ERROR, "SMS, SECURE_NO 중 하나를 선택해주세요.")
         }
 
+        res.json(data)
     })
 
 app.post("/reset-password", validateBody(ResetPasswordRequest),
