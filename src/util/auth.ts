@@ -9,7 +9,7 @@ export type JwtPayload = {
 }
 
 export function verifyToken(req: Request, res: Response, next: NextFunction) {
-    const token = req.header("Authorization")
+    const token = req.header("Authorization")?.replace("Bearer ", "")
 
     if (!token) throw new DomainException(ErrorCode.AUTH_MISSING)
 
