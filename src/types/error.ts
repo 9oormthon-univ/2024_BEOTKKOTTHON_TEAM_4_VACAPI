@@ -32,6 +32,14 @@ export const ErrorCode = {
         code: "CODEF_ERROR",
         message: "CODEF 서비스에서 에러가 발생했습니다.",
     },
+    SMS_ERROR: {
+        code: "SMS_ERROR",
+        message: "인증번호가 일치하지 않습니다.",
+    },
+    SECURE_NO_ERROR: {
+        code: "SECURE_NO_ERROR",
+        message: "보안 코드가 일치하지 않습니다.",
+    },
     PHONE_VERIFICATION_LOCK: {
         code: "PHONE_VERIFICATION_LOCK",
         message: "일일 인증 횟수를 초과하여 잠금 해제가 필요합니다.",

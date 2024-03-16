@@ -64,6 +64,12 @@ export class CodefService {
             }
         ) as CodefChangePasswordResponse
 
+        if (response.result.code == "CF-00025")
+            throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+
+        if (response.result.code == "CF-13300")
+            throw new DomainException(ErrorCode.SECURE_NO_ERROR)
+
         if (response.result.code != "CF-00000")
             throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
 
@@ -95,6 +101,9 @@ export class CodefService {
                 }
             }
         )
+
+        if (response.result.code == "CF-13301")
+            throw new DomainException(ErrorCode.SECURE_NO_ERROR)
 
         if (response.result.code == "CF-12834")
             throw new DomainException(ErrorCode.PHONE_VERIFICATION_LOCK)
