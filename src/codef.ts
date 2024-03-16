@@ -1,10 +1,14 @@
 import axios from "axios";
-import {CodefResponse, CodefTokenResponse} from "./types/codef";
+import {CodefTokenResponse} from "./types/codef";
 import {Credential} from "./types/credential";
 import {CredentialManager} from "./credential";
 import NodeRSA from "node-rsa";
 import {DomainException} from "./exceptions/DomainException";
 import {ErrorCode} from "./types/error";
+import {plainToInstance} from "class-transformer";
+import {CodefMyVaccinationResponse} from "./dto/codef/my-vaccination";
+import {CodefResponse} from "./dto/codef/response";
+import {MyVaccinationResponse} from "./dto/my-vaccination";
 
 
 export class CodefService {
@@ -32,7 +36,7 @@ export class CodefService {
         this.credential = credential
     }
 
-    async getMyVaccinationRecords(id: string, password: string): Promise<any> {
+    async getMyVaccinationRecords(id: string, password: string): Promise<MyVaccinationResponse> {
         const response = await this.request("https://development.codef.io/v1/kr/public/hw/nip-cdc-list/my-vaccination", {
             organization: "0011",
             loginType: "1",
@@ -44,7 +48,12 @@ export class CodefService {
         if (response.result.code == "CF-12100")
             throw new DomainException(ErrorCode.ID_NOT_FOUND)
 
-        return response
+        if (response.result.code != "CF-00000")
+            throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
+
+        const codefResponse = plainToInstance(CodefMyVaccinationResponse, response)
+        
+        return MyVaccinationResponse.fromCodefResponse(codefResponse)
     }
 
     private encryptPassword(password: string): string {
@@ -70,6 +79,10 @@ export class CodefService {
             return this.request(url, data)
         }
 
-        return JSON.parse(decodeURIComponent(body).replace(/\+/g, ' ')) as CodefResponse<any>;
+        return JSON.parse(
+            decodeURIComponent(body)
+                .replace(/\+/g, ' ')
+                .replace(/\\r\\n\s+상세보기/g, '')
+        ) as CodefResponse<any>;
     }
 }
