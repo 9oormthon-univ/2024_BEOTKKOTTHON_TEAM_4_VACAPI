@@ -3,10 +3,36 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "@slack/web-api": "^7.0.2",
+    "aws-sdk": "^2.1578.0",
+    "axios": "^1.6.7",
+    "body-parser": "^1.20.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dynamodb-localhost": "^0.0.9",
     "express": "^4.18.2",
-    "serverless-http": "^3.1.1"
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "node-rsa": "^1.1.1",
+    "serverless-dynamodb": "^0.2.50",
+    "serverless-http": "^3.1.1",
+    "serverless-plugin-additional-stacks": "^1.6.0"
   },
   "devDependencies": {
-    "serverless-offline": "^13.3.3"
+    "@types/body-parser": "^1.19.5",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node-rsa": "^1.1.4",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "eslint": "^8.0.1",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-promise": "^6.0.0",
+    "serverless-domain-manager": "^7.3.8",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^13.3.3",
+    "serverless-plugin-typescript": "^2.1.5",
+    "typescript": "*"
   }
 }

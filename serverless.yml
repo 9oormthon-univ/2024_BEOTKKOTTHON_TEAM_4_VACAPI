@@ -1,17 +1,85 @@
-org: hyungju
-app: vacgom-codef-api
 service: vacgom-codef-api
 frameworkVersion: '3'
+useDotenv: true
 
 plugins:
+  - serverless-plugin-typescript
+  - serverless-plugin-additional-stacks
+  - serverless-dynamodb
   - serverless-offline
 
+
+custom:
+  additionalStacks:
+    permanent:
+      Resources:
+        requestTokensTable:
+          Type: AWS::DynamoDB::Table
+          Properties:
+            TableName: requestTokensTable
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            AttributeDefinitions:
+              - AttributeName: userId
+                AttributeType: S
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+            TimeToLiveSpecification:
+              AttributeName: expireAt
+              Enabled: true
+        credentialsTable:
+          Type: AWS::DynamoDB::Table
+          Properties:
+            TableName: credentialsTable
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+            AttributeDefinitions:
+              - AttributeName: id
+                AttributeType: S
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+
+
+  serverless-dynamodb:
+    start:
+      seed: true
+      migrate: true
+
+    seed:
+      credentialsTable:
+        sources:
+          - table: credentialsTable
+            sources: [ ./credentialsTable.json ]
 provider:
   name: aws
   runtime: nodejs18.x
+  region: ap-northeast-2
+  stage: prod
+  environment:
+    SLACK_TOKEN: ${env:SLACK_TOKEN}
+    SLACK_CHANNEL: ${env:SLACK_CHANNEL}
+    JWT_SECRET: ${env:JWT_SECRET}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - ${env:CREDENTIAL_ARN}
+        - ${env:TOKEN_ARN}
 
 functions:
   api:
-    handler: index.handler
+    handler: src/index.handler
+    timeout: 30
     events:
       - httpApi: '*'
+
