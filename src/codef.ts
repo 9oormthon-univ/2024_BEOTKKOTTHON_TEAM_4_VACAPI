@@ -198,8 +198,8 @@ export class CodefService {
     if (replaceWhiteSpace) {
       return JSON.parse(
         decodeURIComponent(JSON.stringify(body))
-          .replace(/\+/g, ' ')
           .replace(/\\r\\n\s+상세보기/g, '')
+          .replace(/\+/g, ' ')
       )
     } else {
       return JSON.parse(
