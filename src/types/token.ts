@@ -1,4 +1,4 @@
-export interface RequestToken {
+export interface BaseRequestToken {
   userId: string
   jobIndex: number
   threadIndex: number
@@ -7,8 +7,21 @@ export interface RequestToken {
   expireAt: number
   userName: string
   identity: string
-  newPassword: string
+  secureNo?: string
   telecom: string
   phoneNumber: string
-  secureNo?: string
+  type: 'CHANGE_PASSWORD' | 'SIGNUP'
 }
+
+export type ChangePasswordRequestToken = BaseRequestToken & {
+  newPassword: string
+  type: 'CHANGE_PASSWORD'
+}
+
+export type SignupRequestToken = BaseRequestToken & {
+  userId: string
+  userPassword: string
+  type: 'SIGNUP'
+}
+
+export type RequestToken = ChangePasswordRequestToken | SignupRequestToken

@@ -4,7 +4,7 @@ export class SecureNoData {
   jobIndex!: number
   threadIndex!: number
   jti!: string
-  twoWayTimestamp!: number
+  twoWayTimestamp!: string
   continue2Way!: boolean
   extraInfo!: {
     reqSecureNo: string

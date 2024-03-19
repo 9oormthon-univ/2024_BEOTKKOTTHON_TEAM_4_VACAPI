@@ -17,7 +17,7 @@ import {
 } from './dto/reset-password/reset-password'
 import { BaseResponse } from './dto/response'
 import { type SecureNoResponse } from './dto/reset-password/secure-no'
-import { type RequestToken } from './types/token'
+import { type ChangePasswordRequestToken } from './types/token'
 import { RequestTokenRepository } from './request-token-repository'
 import { ErrorCode } from './types/error'
 import { type SmsResponse } from './dto/reset-password/sms'
@@ -30,7 +30,8 @@ const app = express()
 
 app.use(bodyParser.json())
 app.use('/vaccination', verifyToken)
-app.use('/reset-password/*', verifyToken)
+app.use('/reset-password', verifyToken)
+app.use('/reset-password/challenge', verifyToken)
 
 app.get('/', (req, res) => {
   res.send('VACAPI 💉🐻‍❄️')
@@ -127,18 +128,19 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
 
     const response = await codefService.requestResetPassword(dto)
 
-    const token: RequestToken = {
+    const token: ChangePasswordRequestToken = {
       userId,
       jobIndex: response.data.jobIndex,
       threadIndex: response.data.threadIndex,
       jti: response.data.jti,
-      twoWayTimestamp: response.data.twoWayTimestamp,
-      expireAt: response.data.twoWayTimestamp + 170,
+      twoWayTimestamp: +response.data.twoWayTimestamp,
+      expireAt: +response.data.twoWayTimestamp + 170,
       userName: dto.userName,
       identity: dto.identity,
       newPassword: codefService.encryptPassword(dto.newPassword),
       telecom: Telecom[dto.telecom].toString(),
-      phoneNumber: dto.phoneNumber
+      phoneNumber: dto.phoneNumber,
+      type: 'CHANGE_PASSWORD'
     }
 
     await requestTokenRepository.saveToken(token)
@@ -146,7 +148,6 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
     res.json(
       new BaseResponse<SecureNoResponse>(true, '보안 코드를 입력해주세요.', {
         secureNoImage: response.data.extraInfo.reqSecureNo,
-        validUntil: response.data.twoWayTimestamp + 170,
         type: 'SECURE_NO'
       })
     )
@@ -162,7 +163,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       )
     )
   } else {
-    sendSlackMessage(err.message)
+    sendSlackMessage(JSON.stringify(err))
+    console.log(err)
     res.status(500).json(
       new ErrorResponse(
         '서버 에러',
