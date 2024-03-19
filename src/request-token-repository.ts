@@ -10,7 +10,7 @@ export class RequestTokenRepository {
     const command = new PutItemCommand({
       TableName: 'requestTokensTable',
       Item: {
-        userId: { S: token.userId },
+        id: { S: token.id },
         expireAt: { N: token.expireAt.toString() },
         payload: { S: JSON.stringify(token) },
         type: { S: token.type }
@@ -25,14 +25,14 @@ export class RequestTokenRepository {
       new GetItemCommand({
         TableName: 'requestTokensTable',
         Key: {
-          userId: { S: userId }
+          id: { S: userId }
         }
       })
     )
 
     if (Item == null) return null
     if (
-      (Item.userId.S == null) ||
+      (Item.id.S == null) ||
             (Item.expireAt.N == null) ||
             (Item.payload.S == null) ||
             (Item.type.S == null)

@@ -1,15 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumberString, IsString, Length } from 'class-validator'
-
-export enum Telecom {
-  SKT = 0,
-  KT,
-  LG,
-  SKT_MVNO,
-  KT_MVNO,
-  LG_MVNO
-}
-
-export type ChallengeType = 'SECURE_NO' | 'SMS'
+import { type ChallengeType, Telecom } from '../common/common'
 
 export class ResetPasswordRequest {
   @IsString()
@@ -71,11 +61,6 @@ export class ChallengeRequest {
   @IsNumberString()
   @IsNotEmpty()
     code!: string
-}
-
-export class ChallengeResponse<T> {
-  type!: ChallengeType
-  data!: T
 }
 
 export class ResetPasswordResponse {

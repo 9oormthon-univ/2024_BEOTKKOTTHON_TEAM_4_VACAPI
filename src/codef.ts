@@ -9,9 +9,11 @@ import { plainToInstance } from 'class-transformer'
 import { CodefMyVaccinationResponse } from './dto/codef/my-vaccination'
 import { type CodefResponse } from './dto/codef/response'
 import { MyVaccinationResponse } from './dto/my-vaccination'
-import { type ChallengeRequest, type ResetPasswordRequest, Telecom } from './dto/reset-password/reset-password'
+import { type ChallengeRequest, type ResetPasswordRequest } from './dto/reset-password/reset-password'
 import { type CodefChangePasswordResponse, CodefSecureNoResponse } from './dto/codef/change-password'
-import { type ChangePasswordRequestToken } from './types/token'
+import { type RequestToken } from './types/token'
+import { Telecom } from './dto/common/common'
+import { type SignupRequest } from './dto/signup/signup'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -38,27 +40,12 @@ export class CodefService {
     this.credential = credential
   }
 
-  async challengeSMS (token: ChangePasswordRequestToken, dto: ChallengeRequest): Promise<CodefChangePasswordResponse> {
+  async challengeSMS<T>(token: RequestToken, dto: ChallengeRequest, target: string): Promise<T> {
     const response = await this.request(
-      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
+      target,
       {
-        organization: '0011',
-        authMethod: '0',
-        userName: token.userName,
-        identity: token.identity,
-        telecom: token.telecom,
-        phoneNo: token.phoneNumber,
-        userPassword: token.newPassword,
         smsAuthNo: dto.code,
-        secureNo: token.secureNo,
-        secureNoRefresh: '0',
-        is2Way: true,
-        twoWayInfo: {
-          jobIndex: token.jobIndex,
-          threadIndex: token.threadIndex,
-          jti: token.jti,
-          twoWayTimestamp: token.twoWayTimestamp
-        }
+        ...token
       }
     ) as CodefChangePasswordResponse
 
@@ -78,29 +65,15 @@ export class CodefService {
       throw new DomainException(ErrorCode.REGISTER_FIRST, response.data.resResultDesc)
     }
 
-    return response
+    return response as T
   }
 
-  async challengeSecureNo (token: ChangePasswordRequestToken, dto: ChallengeRequest): Promise<any> {
+  async challengeSecureNo (token: RequestToken, dto: ChallengeRequest, target: string): Promise<any> {
     const response = await this.request(
-      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
+      target,
       {
-        organization: '0011',
-        authMethod: '0',
-        userName: token.userName,
-        identity: token.identity,
-        telecom: token.telecom,
-        phoneNo: token.phoneNumber,
-        userPassword: token.newPassword,
-        secureNo: dto.code,
-        secureNoRefresh: '0',
-        is2Way: true,
-        twoWayInfo: {
-          jobIndex: token.jobIndex,
-          threadIndex: token.threadIndex,
-          jti: token.jti,
-          twoWayTimestamp: token.twoWayTimestamp
-        }
+        ...token,
+        secureNo: dto.code
       }
     )
 
@@ -134,6 +107,33 @@ export class CodefService {
         phoneNo: dto.phoneNumber,
         timeout: '170',
         userPassword: this.encryptPassword(dto.newPassword)
+      }
+    )
+
+    if (response.result.code !== 'CF-03002') {
+      throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
+    }
+
+    if (response.data.method === 'secureNo') {
+      return plainToInstance(CodefSecureNoResponse, response)
+    }
+
+    throw new DomainException(ErrorCode.VALIDATION_ERROR, '인증번호를 받을 수 없습니다.')
+  }
+
+  async requestSignup (dto: SignupRequest): Promise<CodefSecureNoResponse> {
+    const response = await this.request(
+      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
+      {
+        organization: '0011',
+        authMethod: '0',
+        userName: dto.userName,
+        identity: dto.identity,
+        telecom: Telecom[dto.telecom].toString(),
+        phoneNo: dto.phoneNumber,
+        timeout: '170',
+        userId: dto.id,
+        userPassword: this.encryptPassword(dto.password)
       }
     )
 

@@ -1,5 +1,5 @@
 export interface BaseRequestToken {
-  userId: string
+  id: string
   jobIndex: number
   threadIndex: number
   jti: string
