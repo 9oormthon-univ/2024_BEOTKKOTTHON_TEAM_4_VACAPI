@@ -69,7 +69,7 @@ app.post('/reset-password/challenge', validateBody(ChallengeRequest),
     if (userId == null) throw new DomainException(ErrorCode.AUTH_MISSING)
 
     const token = await requestTokenRepository.getToken(userId)
-    if (token == null) throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+    if (token == null || token.type !== 'CHANGE_PASSWORD') throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
 
     const credentialManager = new CredentialManager()
     const credential = await credentialManager.getCredential()

@@ -11,7 +11,7 @@ import { type CodefResponse } from './dto/codef/response'
 import { MyVaccinationResponse } from './dto/my-vaccination'
 import { type ChallengeRequest, type ResetPasswordRequest, Telecom } from './dto/reset-password/reset-password'
 import { type CodefChangePasswordResponse, CodefSecureNoResponse } from './dto/codef/change-password'
-import { type RequestToken } from './types/token'
+import { type ChangePasswordRequestToken } from './types/token'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -38,7 +38,7 @@ export class CodefService {
     this.credential = credential
   }
 
-  async challengeSMS (token: RequestToken, dto: ChallengeRequest): Promise<CodefChangePasswordResponse> {
+  async challengeSMS (token: ChangePasswordRequestToken, dto: ChallengeRequest): Promise<CodefChangePasswordResponse> {
     const response = await this.request(
       'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
       {
@@ -81,7 +81,7 @@ export class CodefService {
     return response
   }
 
-  async challengeSecureNo (token: RequestToken, dto: ChallengeRequest): Promise<any> {
+  async challengeSecureNo (token: ChangePasswordRequestToken, dto: ChallengeRequest): Promise<any> {
     const response = await this.request(
       'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
       {
