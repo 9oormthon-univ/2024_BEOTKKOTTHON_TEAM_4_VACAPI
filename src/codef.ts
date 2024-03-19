@@ -197,10 +197,16 @@ export class CodefService {
 
     const body = response.data as string
 
+    if (replaceWhiteSpace) {
+      return JSON.parse(
+        decodeURIComponent(body)
+          .replace(/\+/g, ' ')
+          .replace(/\\r\\n\s+상세보기/g, '')
+      ) as CodefResponse<any>
+    }
+
     return JSON.parse(
       decodeURIComponent(body)
-        .replace(/\+/g, ' ')
-        .replace(/\\r\\n\s+상세보기/g, '')
     ) as CodefResponse<any>
   }
 }
