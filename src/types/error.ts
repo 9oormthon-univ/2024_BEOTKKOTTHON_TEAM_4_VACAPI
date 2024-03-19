@@ -51,5 +51,9 @@ export const ErrorCode = {
   REGISTER_FIRST: {
     code: 'REGISTER_FIRST',
     message: '예방접종도우미에 먼저 가입해주세요.'
+  },
+  TOKEN_EXPIRED: {
+    code: 'TOKEN_EXPIRED',
+    message: '만료된 JWT Token'
   }
 }
