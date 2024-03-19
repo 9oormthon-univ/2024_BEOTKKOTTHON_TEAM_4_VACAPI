@@ -44,6 +44,7 @@ export class CodefService {
     const response = await this.request(
       target,
       {
+        organization: '0011',
         smsAuthNo: dto.code,
         ...token
       }
@@ -72,8 +73,10 @@ export class CodefService {
     const response = await this.request(
       target,
       {
+        organization: '0011',
         ...token,
-        secureNo: dto.code
+        secureNo: dto.code,
+        secureNoRefresh: '0'
       }
     )
 
@@ -123,7 +126,7 @@ export class CodefService {
 
   async requestSignup (dto: SignupRequest): Promise<CodefSecureNoResponse> {
     const response = await this.request(
-      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw',
+      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership',
       {
         organization: '0011',
         authMethod: '0',

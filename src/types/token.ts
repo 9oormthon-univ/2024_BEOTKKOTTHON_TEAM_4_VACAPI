@@ -1,16 +1,21 @@
 export interface BaseRequestToken {
   id: string
-  jobIndex: number
-  threadIndex: number
-  jti: string
-  twoWayTimestamp: number
+  authMethod: string
   expireAt: number
   userName: string
   identity: string
   secureNo?: string
   telecom: string
-  phoneNumber: string
+  phoneNo: string
+  timeout: string
   type: 'CHANGE_PASSWORD' | 'SIGNUP'
+  twoWayInfo: {
+    jobIndex: number
+    threadIndex: number
+    jti: string
+    twoWayTimestamp: number
+  }
+  isTwoWay: boolean
 }
 
 export type ChangePasswordRequestToken = BaseRequestToken & {

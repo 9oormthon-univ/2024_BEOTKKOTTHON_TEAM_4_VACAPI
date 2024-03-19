@@ -29,6 +29,7 @@ app.use('/vaccination', verifyToken)
 app.use('/reset-password', verifyToken)
 app.use('/reset-password/challenge', verifyToken)
 app.use('/signup', verifyToken)
+app.use('/signup/challenge', verifyToken)
 
 app.get('/', (req, res) => {
   res.send('VACAPI 💉🐻‍❄️')
@@ -127,17 +128,22 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
 
     const token: ChangePasswordRequestToken = {
       id: userId,
-      jobIndex: response.data.jobIndex,
-      threadIndex: response.data.threadIndex,
-      jti: response.data.jti,
-      twoWayTimestamp: +response.data.twoWayTimestamp,
+      twoWayInfo: {
+        jobIndex: response.data.jobIndex,
+        threadIndex: response.data.threadIndex,
+        jti: response.data.jti,
+        twoWayTimestamp: +response.data.twoWayTimestamp
+      },
       expireAt: +response.data.twoWayTimestamp + 170,
       userName: dto.userName,
       identity: dto.identity,
       newPassword: codefService.encryptPassword(dto.newPassword),
       telecom: Telecom[dto.telecom].toString(),
-      phoneNumber: dto.phoneNumber,
-      type: 'CHANGE_PASSWORD'
+      phoneNo: dto.phoneNumber,
+      timeout: '170',
+      authMethod: '0',
+      type: 'CHANGE_PASSWORD',
+      isTwoWay: true
     }
 
     await requestTokenRepository.saveToken(token)
@@ -168,17 +174,22 @@ app.post('/signup', validateBody(SignupRequest),
 
     const token: SignupRequestToken = {
       id: userId,
-      jobIndex: response.data.jobIndex,
-      threadIndex: response.data.threadIndex,
-      jti: response.data.jti,
-      twoWayTimestamp: +response.data.twoWayTimestamp,
+      twoWayInfo: {
+        jobIndex: response.data.jobIndex,
+        threadIndex: response.data.threadIndex,
+        jti: response.data.jti,
+        twoWayTimestamp: +response.data.twoWayTimestamp
+      },
       expireAt: +response.data.twoWayTimestamp + 170,
       userName: dto.userName,
       identity: dto.identity,
       userId: dto.id,
       userPassword: codefService.encryptPassword(dto.password),
       telecom: Telecom[dto.telecom].toString(),
-      phoneNumber: dto.phoneNumber,
+      phoneNo: dto.phoneNumber,
+      timeout: '170',
+      authMethod: '0',
+      isTwoWay: true,
       type: 'SIGNUP'
     }
 
@@ -192,6 +203,61 @@ app.post('/signup', validateBody(SignupRequest),
     )
   }
 )
+
+app.post('/signup/challenge', validateBody(ChallengeRequest),
+  async (req: Request & {
+    body: ChallengeRequest
+  }, res: Response) => {
+    const dto: ChallengeRequest = req.body
+    const requestTokenRepository = new RequestTokenRepository()
+
+    const userId = req.userId
+    if (userId == null) throw new DomainException(ErrorCode.AUTH_MISSING)
+
+    const token = await requestTokenRepository.getToken(userId)
+    if (token == null || token.type !== 'SIGNUP') throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+
+    const credentialManager = new CredentialManager()
+    const credential = await credentialManager.getCredential()
+    const codefService = new CodefService(credential)
+
+    let data
+
+    if (dto.type === 'SMS') {
+      if (token.secureNo == null) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
+      const response = await codefService.challengeSMS<any>(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
+
+      data = new BaseResponse<any>(
+        true,
+        '비밀번호 변경 완료',
+        {
+          response
+        }
+      )
+    } else if (dto.type === 'SECURE_NO') {
+      await codefService.challengeSecureNo(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
+
+      await requestTokenRepository.saveToken(
+        {
+          ...token,
+          secureNo: dto.code
+        }
+      )
+
+      data = new BaseResponse<SmsResponse>(
+        true,
+        '요청이 완료되었습니다.',
+        {
+          type: 'SMS',
+          validUntil: token.expireAt
+        }
+      )
+    } else {
+      throw new DomainException(ErrorCode.VALIDATION_ERROR, 'SMS, SECURE_NO 중 하나를 선택해주세요.')
+    }
+
+    res.json(data)
+  })
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof DomainException) {
