@@ -183,29 +183,24 @@ export class CodefService {
   private async request (url: string, data: any, replaceWhiteSpace = false): Promise<CodefResponse<any>> {
     const response = await axios.post(url, data, {
       headers: {
-        Authorization: `Bearer ${this.credential.accessToken}`
+        Authorization: `Bearer ${this.credential.accessToken}`,
+        Accept: 'application/json'
       },
       validateStatus: (status) => status < 500
     })
 
-    const body = response.data
-    if (body.code?.startsWith('CF-0999') === true) {
+    if (response.data.code?.startsWith('CF-0999') === true) {
       this.credential = await this.credentialManager.refreshAccessToken(this.credential)
 
       return await this.request(url, data)
     }
 
-    if (replaceWhiteSpace) {
-      return JSON.parse(
-        decodeURIComponent(JSON.stringify(body))
-          .replace(/\\r\\n\s+상세보기/g, '')
-          .replace(/\+/g, ' ')
-      )
-    } else {
-      return JSON.parse(
-        decodeURIComponent(JSON.stringify(body))
-          .replace(/\\r\\n\s+상세보기/g, '')
-      )
-    }
+    const body = response.data as string
+
+    return JSON.parse(
+      decodeURIComponent(body)
+        .replace(/\+/g, ' ')
+        .replace(/\\r\\n\s+상세보기/g, '')
+    ) as CodefResponse<any>
   }
 }
