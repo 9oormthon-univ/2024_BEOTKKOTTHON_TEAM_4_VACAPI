@@ -200,6 +200,9 @@ export class CodefService {
 
     const body = response.data as string
 
+    console.log(
+      decodeURIComponent(body)
+    )
     if (replaceWhiteSpace) {
       return JSON.parse(
         decodeURIComponent(body)
