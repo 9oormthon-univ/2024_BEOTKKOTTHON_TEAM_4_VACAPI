@@ -143,7 +143,7 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
       timeout: '170',
       authMethod: '0',
       type: 'CHANGE_PASSWORD',
-      isTwoWay: true
+      is2Way: true
     }
 
     await requestTokenRepository.saveToken(token)
@@ -189,7 +189,7 @@ app.post('/signup', validateBody(SignupRequest),
       phoneNo: dto.phoneNumber,
       timeout: '170',
       authMethod: '0',
-      isTwoWay: true,
+      is2Way: true,
       type: 'SIGNUP'
     }
 

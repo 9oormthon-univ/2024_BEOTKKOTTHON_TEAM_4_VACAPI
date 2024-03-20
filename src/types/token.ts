@@ -15,7 +15,7 @@ export interface BaseRequestToken {
     jti: string
     twoWayTimestamp: number
   }
-  isTwoWay: boolean
+  is2Way: boolean
 }
 
 export type ChangePasswordRequestToken = BaseRequestToken & {
