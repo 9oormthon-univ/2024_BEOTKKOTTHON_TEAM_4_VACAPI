@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator'
 import { type CodefMyVaccinationResponse } from './codef/my-vaccination'
-import { parseIdentity } from './common/identity'
+import { formatDate, parseIdentity } from './common/identity'
 
 export class MyVaccinationRequest {
   @IsString()
@@ -24,13 +24,13 @@ export class DetailData {
 
 export class VaccineData {
   vaccineType!: string
-  order!: number
-  orderString!: string
-  date!: number
+  inoculationOrder!: number
+  inoculationOrderString!: string
+  date!: string
   agency!: string
-  vaccineName!: string
-  vaccineBrandName!: string
-  lotNumber!: string
+  vaccineName?: string
+  vaccineBrandName?: string
+  lotNumber?: string
 }
 
 export class MyVaccinationResponse {
@@ -52,9 +52,9 @@ export class MyVaccinationResponse {
           (detail): VaccineData => {
             return {
               vaccineType: vaccine.resVaccineNm,
-              order: parseInt(vaccine.resInoculationOrder),
-              orderString: detail.resInoculationOrder,
-              date: parseInt(detail.resInoculationDate),
+              inoculationOrder: parseInt(vaccine.resInoculationOrder),
+              inoculationOrderString: detail.resInoculationOrder,
+              date: formatDate(detail.resInoculationDate),
               agency: detail.resInoculationAgency,
               vaccineName: detail.resVaccineNm,
               vaccineBrandName: detail.commBrandName,
