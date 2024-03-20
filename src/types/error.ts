@@ -59,5 +59,9 @@ export const ErrorCode = {
   TOKEN_EXPIRED: {
     code: 'TOKEN_EXPIRED',
     message: '만료된 JWT Token'
+  },
+  RRN_REQUIRED: {
+    code: 'RRN_REQUIRED',
+    message: '주민등록번호 등록이 필요합니다.'
   }
 }
