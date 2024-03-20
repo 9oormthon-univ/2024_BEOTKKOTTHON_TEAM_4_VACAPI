@@ -56,7 +56,7 @@ custom:
             sources: [ ./credentialsTable.json ]
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs16.x
   region: ap-northeast-2
   stage: prod
   environment:

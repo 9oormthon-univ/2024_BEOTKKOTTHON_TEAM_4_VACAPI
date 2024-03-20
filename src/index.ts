@@ -6,7 +6,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 
 import serverless from 'serverless-http'
 import { validateBody } from './util/validate'
-import { MyVaccinationRequest } from './dto/my-vaccination'
+import { MyVaccinationRequest, type MyVaccinationResponse } from './dto/my-vaccination'
 import { DomainException } from './exceptions/DomainException'
 import { ErrorResponse } from './dto/error'
 import { ChallengeRequest, ResetPasswordRequest, type ResetPasswordResponse } from './dto/reset-password/reset-password'
@@ -19,6 +19,7 @@ import jwt from 'jsonwebtoken'
 import { type SecureNoResponse, type SmsResponse, Telecom } from './dto/common/common'
 import { SignupRequest } from './dto/signup/signup'
 import { type CodefChangePasswordResponse } from './dto/codef/change-password'
+import { Crawler } from './crawler'
 
 require('express-async-errors')
 
@@ -51,9 +52,20 @@ app.post('/vaccination', validateBody(MyVaccinationRequest),
     const credentialManager = new CredentialManager()
     const credential = await credentialManager.getCredential()
     const codefService = new CodefService(credential)
+    const crawler = new Crawler()
 
     const result = await codefService.getMyVaccinationRecords(dto.id, dto.password)
-    res.json(result)
+    const hpv = await crawler.getHPV(dto.id, dto.password)
+
+    const merged: MyVaccinationResponse = {
+      ...result,
+      vaccineList: [
+        ...result.vaccineList,
+        ...hpv
+      ]
+    }
+
+    res.json(merged)
   })
 
 app.post('/reset-password/challenge', validateBody(ChallengeRequest),
