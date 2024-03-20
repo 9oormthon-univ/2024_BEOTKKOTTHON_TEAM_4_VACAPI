@@ -17,11 +17,11 @@ export class SecureNoData {
 export class CodefSecureNoResponse extends CodefResponse<SecureNoData> {
 }
 
-export class ChangePasswordResponseData {
+export class ChallengeResponseData {
   resLoginId!: string
   resRegistrationStatus!: '1' | '0'
   resResultDesc!: string
 }
 
-export class CodefChangePasswordResponse extends CodefResponse<ChangePasswordResponseData> {
+export class CodefChallengeResponse extends CodefResponse<ChallengeResponseData> {
 }

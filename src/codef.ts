@@ -10,10 +10,11 @@ import { CodefMyVaccinationResponse } from './dto/codef/my-vaccination'
 import { type CodefResponse } from './dto/codef/response'
 import { MyVaccinationResponse } from './dto/my-vaccination'
 import { type ChallengeRequest, type ResetPasswordRequest } from './dto/reset-password/reset-password'
-import { type CodefChangePasswordResponse, CodefSecureNoResponse } from './dto/codef/change-password'
+import { type CodefChallengeResponse, CodefSecureNoResponse } from './dto/codef/change-password'
 import { type RequestToken } from './types/token'
 import { Telecom } from './dto/common/common'
 import { type SignupRequest } from './dto/signup/signup'
+import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -40,7 +41,7 @@ export class CodefService {
     this.credential = credential
   }
 
-  async challengeSMS<T>(token: RequestToken, dto: ChallengeRequest, target: string): Promise<T> {
+  async challengeSMS (token: RequestToken, dto: ChallengeRequest, target: string): Promise<CodefChallengeResponse> {
     const response = await this.request(
       target,
       {
@@ -48,7 +49,7 @@ export class CodefService {
         smsAuthNo: dto.code,
         ...token
       }
-    ) as CodefChangePasswordResponse
+    ) as CodefChallengeResponse
 
     if (response.result.code === 'CF-00025') {
       throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
@@ -63,10 +64,10 @@ export class CodefService {
     }
 
     if (response.data.resRegistrationStatus === '0') {
-      throw new DomainException(ErrorCode.REGISTER_FIRST, response.data.resResultDesc)
+      throw new CodefChallengeRegistrationFailed(response.data)
     }
 
-    return response as T
+    return response
   }
 
   async challengeSecureNo (token: RequestToken, dto: ChallengeRequest, target: string): Promise<any> {

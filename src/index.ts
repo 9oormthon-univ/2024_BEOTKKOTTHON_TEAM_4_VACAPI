@@ -18,8 +18,9 @@ import { verifyToken } from './util/auth'
 import jwt from 'jsonwebtoken'
 import { type SecureNoResponse, type SmsResponse, Telecom } from './dto/common/common'
 import { SignupRequest } from './dto/signup/signup'
-import { type CodefChangePasswordResponse } from './dto/codef/change-password'
 import { Crawler } from './crawler'
+import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
+import { parseUserIdFromDesc } from './util/signup'
 
 require('express-async-errors')
 
@@ -89,7 +90,7 @@ app.post('/reset-password/challenge', validateBody(ChallengeRequest),
 
     if (dto.type === 'SMS') {
       if (token.secureNo == null) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
-      const response = await codefService.challengeSMS<CodefChangePasswordResponse>(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw')
+      const response = await codefService.challengeSMS(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw')
 
       data = new BaseResponse<ResetPasswordResponse>(
         true,
@@ -237,15 +238,28 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
 
     if (dto.type === 'SMS') {
       if (token.secureNo == null) throw new DomainException(ErrorCode.NO_CHALLENGE_SECURE_CODE)
-      const response = await codefService.challengeSMS<any>(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
 
-      data = new BaseResponse<any>(
-        true,
-        '비밀번호 변경 완료',
-        {
-          response
+      try {
+        const response = await codefService.challengeSMS(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
+
+        data = new BaseResponse<any>(
+          true,
+          '회원가입 완료',
+          {
+            response
+          }
+        )
+
+        res.json(data)
+      } catch (e) {
+        if (e instanceof CodefChallengeRegistrationFailed) {
+          throw new DomainException(ErrorCode.USER_ALREADY_REGISTERED, {
+            userId: parseUserIdFromDesc(e.payload.resResultDesc)
+          })
+        } else {
+          throw e
         }
-      )
+      }
     } else if (dto.type === 'SECURE_NO') {
       await codefService.challengeSecureNo(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
 
@@ -264,11 +278,10 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
           validUntil: token.expireAt
         }
       )
+      res.json(data)
     } else {
       throw new DomainException(ErrorCode.VALIDATION_ERROR, 'SMS, SECURE_NO 중 하나를 선택해주세요.')
     }
-
-    res.json(data)
   })
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
