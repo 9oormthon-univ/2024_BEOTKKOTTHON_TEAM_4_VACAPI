@@ -17,17 +17,21 @@ export class Crawler {
   private readonly client = wrapper(this.axios)
 
   public async getHPV (id: string, password: string): Promise<VaccineData[]> {
-    await this.login(id, password)
-    const userId = await this.getUserId()
-    const response = await Promise.all(
-      [1, 2, 3].map(
-        async (count) => {
-          return await this.getVaccination('2003', count, userId)
-        }
+    try {
+      await this.login(id, password)
+      const userId = await this.getUserId()
+      const response = await Promise.all(
+        [1, 2, 3].map(
+          async (count) => {
+            return await this.getVaccination('2003', count, userId)
+          }
+        )
       )
-    )
 
-    return response.filter((vaccine) => vaccine !== null) as VaccineData[]
+      return response.filter((vaccine) => vaccine !== null) as VaccineData[]
+    } catch (e) {
+      return []
+    }
   }
 
   private async getUserId (): Promise<string> {
