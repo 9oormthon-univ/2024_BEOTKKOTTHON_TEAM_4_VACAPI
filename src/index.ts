@@ -270,10 +270,7 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
 
         data = new BaseResponse<any>(
           true,
-          '회원가입 완료',
-          {
-            response
-          }
+          '회원가입 완료'
         )
 
         res.json(data)
