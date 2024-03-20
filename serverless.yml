@@ -18,10 +18,10 @@ custom:
           Properties:
             TableName: requestTokensTable
             KeySchema:
-              - AttributeName: userId
+              - AttributeName: id
                 KeyType: HASH
             AttributeDefinitions:
-              - AttributeName: userId
+              - AttributeName: id
                 AttributeType: S
             ProvisionedThroughput:
               ReadCapacityUnits: 1
