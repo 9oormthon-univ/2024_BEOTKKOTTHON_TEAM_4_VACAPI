@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator'
 import { type CodefMyVaccinationResponse } from './codef/my-vaccination'
+import { parseIdentity } from './common/identity'
 
 export class MyVaccinationRequest {
   @IsString()
@@ -39,8 +40,7 @@ export class MyVaccinationResponse {
   vaccineList!: VaccineData[]
 
   static fromCodefResponse (response: CodefMyVaccinationResponse): MyVaccinationResponse {
-    const sexIdentityNo = response.data.resUserIdentiyNo.slice(7, 8)
-    const sex = sexIdentityNo === '1' || sexIdentityNo === '3' ? 'M' : 'F'
+    const userIdentity = parseIdentity(response.data.resUserIdentiyNo)
 
     const vaccinations = response.data.resVaccineList.filter(
       (vaccine) => {
@@ -67,8 +67,8 @@ export class MyVaccinationResponse {
 
     return {
       name: response.data.resUserNm,
-      birth: response.data.resUserIdentiyNo.slice(0, 6),
-      sex,
+      birth: userIdentity.date,
+      sex: userIdentity.sex,
       vaccineList: vaccinations
     }
   }
