@@ -21,6 +21,8 @@ import { SignupRequest } from './dto/signup/signup'
 import { Crawler } from './crawler'
 import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
 import { parseUserIdFromDesc } from './util/signup'
+import { rnnToIdentity } from './util/rnn'
+import { RegisterRnnRequest } from './dto/register-rnn'
 
 require('express-async-errors')
 
@@ -170,6 +172,25 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
   }
 )
 
+app.post('/register-rnn', validateBody(RegisterRnnRequest), async (req: Request & {
+  body: RegisterRnnRequest
+}, res: Response) => {
+  const credentialManager = new CredentialManager()
+  const credential = await credentialManager.getCredential()
+  const codefService = new CodefService(credential)
+
+  const dto: RegisterRnnRequest = req.body
+
+  try {
+    await codefService.registerRNN(dto.rnn, dto.id, codefService.encryptPassword(dto.password))
+
+    res.json(new BaseResponse<any>(true, '등록 완료'))
+  } catch (e) {
+    if (e instanceof DomainException) throw e
+    throw new DomainException(ErrorCode.RNN_REGISTER_FAILED)
+  }
+})
+
 app.post('/signup', validateBody(SignupRequest),
   async (req: Request & { body: SignupRequest }, res: Response): Promise<void> => {
     const userId = req.userId
@@ -195,7 +216,8 @@ app.post('/signup', validateBody(SignupRequest),
       },
       expireAt: +response.data.twoWayTimestamp + 170,
       userName: dto.userName,
-      identity: dto.identity,
+      identity: rnnToIdentity(dto.rnn),
+      rnn: codefService.encryptPassword(dto.rnn),
       userId: dto.id,
       userPassword: codefService.encryptPassword(dto.password),
       telecom: Telecom[dto.telecom].toString(),
@@ -241,6 +263,10 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
 
       try {
         const response = await codefService.challengeSMS(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
+
+        if (token.rnn != null) {
+          await codefService.registerRNN(token.rnn, token.id, token.userPassword)
+        }
 
         data = new BaseResponse<any>(
           true,

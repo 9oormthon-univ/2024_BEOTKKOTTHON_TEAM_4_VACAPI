@@ -15,6 +15,7 @@ import { type RequestToken } from './types/token'
 import { Telecom } from './dto/common/common'
 import { type SignupRequest } from './dto/signup/signup'
 import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
+import { rnnToIdentity } from './util/rnn'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -132,7 +133,7 @@ export class CodefService {
         organization: '0011',
         authMethod: '0',
         userName: dto.userName,
-        identity: dto.identity,
+        identity: rnnToIdentity(dto.rnn),
         telecom: Telecom[dto.telecom].toString(),
         phoneNo: dto.phoneNumber,
         timeout: '170',
@@ -177,6 +178,26 @@ export class CodefService {
     const codefResponse = plainToInstance(CodefMyVaccinationResponse, response)
 
     return MyVaccinationResponse.fromCodefResponse(codefResponse)
+  }
+
+  async registerRNN (rnn: string, id: string, password: string): Promise<boolean> {
+    const response = await this.request(
+      'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-additional-info',
+      {
+        organization: '0011',
+        userId: id,
+        userPassword: password,
+        identity: rnn
+      }
+    )
+    if (response.result.code === 'CF-12100') {
+      throw new DomainException(ErrorCode.ID_NOT_FOUND)
+    }
+    if (response.result.code === 'CF-12801') {
+      throw new DomainException(ErrorCode.PASSWORD_ERROR)
+    }
+
+    return true
   }
 
   public encryptPassword (password: string): string {

@@ -63,5 +63,9 @@ export const ErrorCode = {
   RRN_REQUIRED: {
     code: 'RRN_REQUIRED',
     message: '주민등록번호 등록이 필요합니다.'
+  },
+  RNN_REGISTER_FAILED: {
+    code: 'RNN_REGISTER_FAILED',
+    message: '주민등록번호 등록에 실패했습니다. 다시 로그인을 시도해주세요.'
   }
 }

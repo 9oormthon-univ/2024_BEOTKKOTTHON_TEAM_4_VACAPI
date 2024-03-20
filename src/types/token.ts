@@ -5,6 +5,7 @@ export interface BaseRequestToken {
   userName: string
   identity: string
   secureNo?: string
+  rnn?: string
   telecom: string
   phoneNo: string
   timeout: string
