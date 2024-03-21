@@ -70,6 +70,23 @@ export class CodefService {
     return response
   }
 
+  async requestNewSecureNo (token: RequestToken, target: string): Promise<CodefSecureNoResponse> {
+    const response = await this.request(
+      target,
+      {
+        organization: '0011',
+        ...token,
+        secureNoRefresh: '1'
+      }
+    )
+
+    if (response.result.code !== 'CF-03002') {
+      throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
+    }
+
+    return plainToInstance(CodefSecureNoResponse, response)
+  }
+
   async challengeSecureNo (token: RequestToken, dto: ChallengeRequest, target: string): Promise<any> {
     const response = await this.request(
       target,
@@ -81,6 +98,13 @@ export class CodefService {
       }
     )
 
+    if (response.result.code === 'CF-03002') {
+      const secureNoResponse = response as CodefSecureNoResponse
+      throw new DomainException(ErrorCode.RETRY_SECURE_NO, {
+        secureNoImage: secureNoResponse.data.extraInfo.reqSecureNo
+
+      })
+    }
     if (response.result.code === 'CF-13301') {
       throw new DomainException(ErrorCode.SECURE_NO_ERROR)
     }

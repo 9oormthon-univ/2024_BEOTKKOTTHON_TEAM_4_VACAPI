@@ -237,6 +237,54 @@ app.post('/signup', validateBody(SignupRequest),
   }
 )
 
+app.post('/reset-password/secureNo', async (req: Request, res: Response) => {
+  const requestTokenRepository = new RequestTokenRepository()
+
+  const credentialManager = new CredentialManager()
+  const credential = await credentialManager.getCredential()
+  const codefService = new CodefService(credential)
+
+  const userId = req.userId
+  if (userId == null) throw new DomainException(ErrorCode.AUTH_MISSING)
+
+  const token = await requestTokenRepository.getToken(userId)
+  if (token == null || token.type !== 'SIGNUP') throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+
+  const response = await codefService.requestNewSecureNo(token,
+    'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/finding-id-pw')
+
+  res.json(
+    new BaseResponse<SecureNoResponse>(true, '보안 코드를 입력해주세요.', {
+      secureNoImage: response.data.extraInfo.reqSecureNo,
+      type: 'SECURE_NO'
+    })
+  )
+})
+
+app.post('/signup/secureNo', async (req: Request, res: Response) => {
+  const requestTokenRepository = new RequestTokenRepository()
+
+  const credentialManager = new CredentialManager()
+  const credential = await credentialManager.getCredential()
+  const codefService = new CodefService(credential)
+
+  const userId = req.userId
+  if (userId == null) throw new DomainException(ErrorCode.AUTH_MISSING)
+
+  const token = await requestTokenRepository.getToken(userId)
+  if (token == null || token.type !== 'SIGNUP') throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
+
+  const response = await codefService.requestNewSecureNo(token,
+    'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
+
+  res.json(
+    new BaseResponse<SecureNoResponse>(true, '보안 코드를 입력해주세요.', {
+      secureNoImage: response.data.extraInfo.reqSecureNo,
+      type: 'SECURE_NO'
+    })
+  )
+})
+
 app.post('/signup/challenge', validateBody(ChallengeRequest),
   async (req: Request & {
     body: ChallengeRequest
