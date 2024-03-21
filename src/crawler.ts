@@ -16,6 +16,31 @@ export class Crawler {
   private readonly axios = axios.create({ jar: this.jar })
   private readonly client = wrapper(this.axios)
 
+  public async isIDAvaliable (id: string): Promise<boolean> {
+    try {
+      const csrf = await this.retrieveCsrf('https://nip.kdca.go.kr/irhp/goLogin.do')
+      const response = await this.client.post(
+        'https://nip.kdca.go.kr/irhp/mebr/chkIDExists.json',
+        {
+          userId: id
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Csrf-Token': csrf
+          }
+        }
+      )
+
+      if (response.data.rtnVal === 'true') return false
+      else return true
+    } catch (e) {
+      console.log(e)
+      return true
+    }
+  }
+
   public async getHPV (id: string, password: string): Promise<VaccineData[]> {
     try {
       await this.login(id, password)

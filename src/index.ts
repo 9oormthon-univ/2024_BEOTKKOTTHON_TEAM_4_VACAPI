@@ -22,6 +22,7 @@ import { Crawler } from './crawler'
 import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
 import { parseUserIdFromDesc } from './util/signup'
 import { RegisterRnnRequest } from './dto/register-rnn'
+import { CheckIdAvailable } from './dto/check-id-available'
 
 require('express-async-errors')
 
@@ -170,6 +171,19 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
     )
   }
 )
+
+app.post('/check-id-available', validateBody(CheckIdAvailable), async (req: Request & {
+  body: CheckIdAvailable
+}, res: Response) => {
+  const crawler = new Crawler()
+
+  const dto = req.body as CheckIdAvailable
+  res.json(
+    new BaseResponse(true, '조회가 완료되었습니다.', {
+      isAvailable: await crawler.isIDAvaliable(dto.id)
+    })
+  )
+})
 
 app.post('/register-rnn', validateBody(RegisterRnnRequest), async (req: Request & {
   body: RegisterRnnRequest
