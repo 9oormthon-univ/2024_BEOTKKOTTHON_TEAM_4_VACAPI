@@ -75,5 +75,9 @@ export const ErrorCode = {
   RETRY_SMS: {
     code: 'RETRY_SMS',
     message: '인증번호를 다시 입력해주세요.'
+  },
+  INVALID_AUTH_INFO: {
+    code: 'INVALID_AUTH_INFO',
+    message: '입력한 정보가 유효하지 않습니다.'
   }
 }

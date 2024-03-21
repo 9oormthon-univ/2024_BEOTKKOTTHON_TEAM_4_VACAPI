@@ -125,6 +125,9 @@ export class CodefService {
       throw new DomainException(ErrorCode.CHALLENGE_NOT_FOUND)
     }
 
+    if (response.result.code === 'CF-12835') {
+      throw new DomainException(ErrorCode.INVALID_AUTH_INFO)
+    }
     if (response.result.code !== 'CF-03002') {
       throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
     }
