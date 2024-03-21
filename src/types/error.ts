@@ -71,5 +71,9 @@ export const ErrorCode = {
   RETRY_SECURE_NO: {
     code: 'RETRY_SECURE_NO',
     message: '보안문자를 다시 입력해주세요.'
+  },
+  RETRY_SMS: {
+    code: 'RETRY_SMS',
+    message: '인증번호를 다시 입력해주세요.'
   }
 }
