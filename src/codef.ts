@@ -15,7 +15,6 @@ import { type RequestToken } from './types/token'
 import { Telecom } from './dto/common/common'
 import { type SignupRequest } from './dto/signup/signup'
 import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
-import { rnnToIdentity } from './util/rnn'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -133,7 +132,7 @@ export class CodefService {
         organization: '0011',
         authMethod: '0',
         userName: dto.userName,
-        identity: rnnToIdentity(dto.rnn),
+        identity: dto.identity,
         telecom: Telecom[dto.telecom].toString(),
         phoneNo: dto.phoneNumber,
         timeout: '170',

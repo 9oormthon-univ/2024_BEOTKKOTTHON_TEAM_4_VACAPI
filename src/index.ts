@@ -21,7 +21,6 @@ import { SignupRequest } from './dto/signup/signup'
 import { Crawler } from './crawler'
 import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
 import { parseUserIdFromDesc } from './util/signup'
-import { rnnToIdentity } from './util/rnn'
 import { RegisterRnnRequest } from './dto/register-rnn'
 
 require('express-async-errors')
@@ -214,10 +213,9 @@ app.post('/signup', validateBody(SignupRequest),
         jti: response.data.jti,
         twoWayTimestamp: +response.data.twoWayTimestamp
       },
-      expireAt: +response.data.twoWayTimestamp + 170,
+      expireAt: +response.data.twoWayTimestamp + 3000,
       userName: dto.userName,
-      identity: rnnToIdentity(dto.rnn),
-      rnn: codefService.encryptPassword(dto.rnn),
+      identity: dto.identity,
       userId: dto.id,
       userPassword: codefService.encryptPassword(dto.password),
       telecom: Telecom[dto.telecom].toString(),
@@ -263,10 +261,6 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
 
       try {
         const response = await codefService.challengeSMS(token, dto, 'https://development.codef.io/v1/kr/public/hw/nip-cdc-list/application-membership')
-
-        if (token.rnn != null) {
-          await codefService.registerRNN(token.rnn, token.id, token.userPassword)
-        }
 
         data = new BaseResponse<any>(
           true,
