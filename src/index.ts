@@ -27,8 +27,11 @@ import { CheckIdAvailable } from './dto/check-id-available'
 require('express-async-errors')
 
 const app = express()
+const cors = require('cors')
 
 app.use(bodyParser.json())
+app.use(cors())
+app.options('*', cors())
 app.use('/vaccination', verifyToken)
 app.use('/reset-password', verifyToken)
 app.use('/reset-password/challenge', verifyToken)
@@ -365,7 +368,7 @@ app.post('/signup/challenge', validateBody(ChallengeRequest),
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof DomainException) {
-    res.status(400).json(
+    res.status(err.errorData.success ? 200 : 400).json(
       new ErrorResponse(
         err.errorData.message,
         err.errorData.code,
