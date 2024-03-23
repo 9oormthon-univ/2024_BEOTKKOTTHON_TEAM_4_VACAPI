@@ -63,12 +63,16 @@ app.post('/vaccination', validateBody(MyVaccinationRequest),
     const result = await codefService.getMyVaccinationRecords(dto.id, dto.password)
     const hpv = await crawler.getHPV(dto.id, dto.password)
 
-    const merged: MyVaccinationResponse = {
-      ...result,
-      vaccineList: [
-        ...result.vaccineList,
-        ...hpv
-      ]
+    const merged: BaseResponse<MyVaccinationResponse> = {
+      success: true,
+      message: '조회가 완료 되었습니다',
+      data: {
+        ...result,
+        vaccineList: [
+          ...result.vaccineList,
+          ...hpv
+        ]
+      }
     }
 
     res.json(merged)
