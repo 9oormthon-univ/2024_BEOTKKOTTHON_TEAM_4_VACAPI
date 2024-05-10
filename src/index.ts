@@ -60,7 +60,26 @@ app.post('/vaccination', validateBody(MyVaccinationRequest),
     const codefService = new CodefService(credential)
     const crawler = new Crawler()
 
-    const result = await codefService.getMyVaccinationRecords(dto.id, dto.password)
+    const result =
+            await codefService.getMyVaccinationRecords(dto.id, dto.password)
+    const convertedResult = result.vaccineList.map((vaccine) => {
+      if (vaccine.vaccineName === 'TdaP') {
+        return {
+          ...vaccine,
+          inoculationOrder: vaccine.inoculationOrder + 1
+        }
+      } else if (vaccine.vaccineName === 'IPV') {
+        return {
+          ...vaccine,
+          inoculationOrder: vaccine.inoculationOrder - 2
+        }
+      } else {
+        return {
+          ...vaccine
+        }
+      }
+    })
+
     const hpv = await crawler.getHPV(dto.id, dto.password)
 
     const merged: BaseResponse<MyVaccinationResponse> = {
@@ -69,7 +88,7 @@ app.post('/vaccination', validateBody(MyVaccinationRequest),
       data: {
         ...result,
         vaccineList: [
-          ...result.vaccineList,
+          ...convertedResult,
           ...hpv
         ]
       }
@@ -159,7 +178,7 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
       expireAt: +response.data.twoWayTimestamp + 170,
       userName: dto.userName,
       identity: dto.identity,
-      newPassword: codefService.encryptPassword(dto.newPassword),
+      userPassword: codefService.encryptPassword(dto.newPassword),
       telecom: Telecom[dto.telecom].toString(),
       phoneNo: dto.phoneNumber,
       timeout: '170',
