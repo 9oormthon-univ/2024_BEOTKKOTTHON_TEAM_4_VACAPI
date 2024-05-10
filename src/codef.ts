@@ -128,6 +128,13 @@ export class CodefService {
     if (response.result.code === 'CF-12835') {
       throw new DomainException(ErrorCode.INVALID_AUTH_INFO)
     }
+    if (response.result.code === 'CF-12100') {
+      if (response.result.extraMessage.includes('{userError:578}')) {
+        throw new DomainException(ErrorCode.INVALID_AUTH_INFO)
+      } else {
+        throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
+      }
+    }
     if (response.result.code !== 'CF-03002') {
       throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
     }
@@ -244,6 +251,8 @@ export class CodefService {
   }
 
   private async request (url: string, data: any, replaceWhiteSpace = false): Promise<CodefResponse<any>> {
+    console.log(data)
+
     const response = await axios.post(url, data, {
       headers: {
         Authorization: `Bearer ${this.credential.accessToken}`,
