@@ -99,5 +99,16 @@ export const ErrorCode: Record<string, ErrorData> = {
     code: 'INVALID_AUTH_INFO',
     message: '입력한 정보가 유효하지 않습니다.',
     success: false
+  },
+  NOT_NIP_MEMBER: {
+    code: 'NOT_NIP_MEMBER',
+    message: '예방접종도우미 회원이 아닙니다.',
+    success: false
+  },
+  NIP_ERROR: {
+    code: 'NIP_ERROR',
+    message: '예방접종도우미 서비스에서 에러가 발생했습니다.',
+    success: false
+
   }
 }

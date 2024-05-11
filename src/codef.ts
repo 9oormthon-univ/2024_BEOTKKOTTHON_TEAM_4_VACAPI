@@ -72,7 +72,20 @@ export class CodefService {
     }
 
     if (response.data.resRegistrationStatus === '0') {
-      throw new CodefChallengeRegistrationFailed(response.data)
+      if (response.data.resLoginId !== '') {
+        throw new CodefChallengeRegistrationFailed(response.data)
+      } else {
+        if (response.data.resResultDesc.includes('회원이')) {
+          throw new DomainException(ErrorCode.NOT_NIP_MEMBER)
+        }
+        throw new DomainException({
+          code: ErrorCode.NIP_ERROR.code,
+          message: response.data.resResultDesc.replace(
+            '/+/gi', ' '
+          ),
+          success: false
+        })
+      }
     }
 
     return response
