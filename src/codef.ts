@@ -68,7 +68,10 @@ export class CodefService {
     }
 
     if (response.result.code !== 'CF-00000') {
-      throw new DomainException(ErrorCode.CODEF_ERROR, response.result)
+      throw new DomainException(ErrorCode.CODEF_ERROR, {
+        ...response.result,
+        message: response.result.message.replace('/+/gi', ' ')
+      })
     }
 
     if (response.data.resRegistrationStatus === '0') {
@@ -78,12 +81,11 @@ export class CodefService {
         if (response.data.resResultDesc.includes('회원이')) {
           throw new DomainException(ErrorCode.NOT_NIP_MEMBER)
         }
-        throw new DomainException({
+        throw new DomainException(ErrorCode.NIP_ERROR, {
           code: ErrorCode.NIP_ERROR.code,
           message: response.data.resResultDesc.replace(
             '/+/gi', ' '
-          ),
-          success: false
+          )
         })
       }
     }
