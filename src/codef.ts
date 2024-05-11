@@ -81,8 +81,9 @@ export class CodefService {
         if (response.data.resResultDesc.includes('회원이')) {
           throw new DomainException(ErrorCode.NOT_NIP_MEMBER)
         }
-        throw new DomainException(ErrorCode.NIP_ERROR, {
-          code: ErrorCode.NIP_ERROR.code,
+        throw new DomainException({
+          code: ErrorCode.CODEF_ERROR.code,
+          success: false,
           message: response.data.resResultDesc.replace(
             '/+/gi', ' '
           )
