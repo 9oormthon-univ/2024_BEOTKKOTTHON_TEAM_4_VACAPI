@@ -221,13 +221,20 @@ export class CodefService {
     }, true)
 
     if (response.result.code === 'CF-12100') {
-      throw new DomainException(ErrorCode.ID_NOT_FOUND)
+      throw new DomainException({
+        code: ErrorCode.NIP_ERROR.code,
+        message: response.result.extraMessage,
+        success: false
+      })
     }
     if (response.result.code === 'CF-12801') {
       throw new DomainException(ErrorCode.PASSWORD_ERROR)
     }
     if (response.result.code === 'CF-12066') {
       throw new DomainException(ErrorCode.RRN_REQUIRED)
+    }
+    if (response.result.code === 'CF-12800') {
+      throw new DomainException(ErrorCode.ID_NOT_FOUND)
     }
     if (response.result.code !== 'CF-00000') {
       throw new DomainException(ErrorCode.VALIDATION_ERROR, response.result.extraMessage)
