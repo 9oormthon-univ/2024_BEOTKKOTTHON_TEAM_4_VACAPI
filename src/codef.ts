@@ -75,7 +75,7 @@ export class CodefService {
     }
 
     if (response.data.resRegistrationStatus === '0') {
-      if (response.data.resLoginId !== '') {
+      if (response.data.resLoginId === '') {
         throw new CodefChallengeRegistrationFailed(response.data)
       } else {
         if (response.data.resResultDesc.includes('회원이')) {
@@ -221,6 +221,10 @@ export class CodefService {
     }, true)
 
     if (response.result.code === 'CF-12100') {
+      if (response.result.extraMessage.includes('비밀번호 오류 횟수가 5회를 초과')) {
+        throw new DomainException(ErrorCode.PASSWORD_5_ERROR)
+      }
+
       throw new DomainException({
         code: ErrorCode.NIP_ERROR.code,
         message: response.result.extraMessage,

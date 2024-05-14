@@ -4,7 +4,7 @@ export interface ErrorData {
   success: boolean
 }
 
-export const ErrorCode: Record<string, ErrorData> = {
+export const ErrorCode = {
   VALIDATION_ERROR: {
     code: 'VALIDATION_ERROR',
     message: '요청을 확인해주세요.',
@@ -109,6 +109,10 @@ export const ErrorCode: Record<string, ErrorData> = {
     code: 'NIP_ERROR',
     message: '예방접종도우미 서비스에서 에러가 발생했습니다.',
     success: false
-
+  },
+  PASSWORD_5_ERROR: {
+    code: 'PASSWORD_5_ERROR',
+    message: '비밀번호 오류 5회 초과로 비밀번호 찾기가 필요합니다',
+    success: false
   }
 }
