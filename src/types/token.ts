@@ -20,7 +20,7 @@ export interface BaseRequestToken {
 }
 
 export type ChangePasswordRequestToken = BaseRequestToken & {
-  newPassword: string
+  userPassword: string
   type: 'CHANGE_PASSWORD'
 }
 

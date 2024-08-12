@@ -14,7 +14,6 @@ import { type CodefChallengeResponse, CodefSecureNoResponse } from './dto/codef/
 import { type RequestToken } from './types/token'
 import { Telecom } from './dto/common/common'
 import { type SignupRequest } from './dto/signup/signup'
-import { CodefChallengeRegistrationFailed } from './exceptions/CodefChallengeRegistrationFailed'
 
 export class CodefService {
   private readonly credentialManager = new CredentialManager()
@@ -76,7 +75,11 @@ export class CodefService {
 
     if (response.data.resRegistrationStatus === '0') {
       if (response.data.resLoginId === '') {
-        throw new CodefChallengeRegistrationFailed(response.data)
+        throw new DomainException({
+          code: ErrorCode.CODEF_ERROR.code,
+          success: false,
+          message: response.data.resResultDesc
+        })
       } else {
         if (response.data.resResultDesc.includes('회원이')) {
           throw new DomainException(ErrorCode.NOT_NIP_MEMBER)

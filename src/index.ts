@@ -158,6 +158,9 @@ app.post('/reset-password', validateBody(ResetPasswordRequest),
     if (userId == null) throw new DomainException(ErrorCode.AUTH_MISSING)
 
     const dto: ResetPasswordRequest = req.body
+    if (dto.identity.length !== 9) {
+      throw new DomainException(ErrorCode.BIRTH_ERROR)
+    }
 
     const requestTokenRepository = new RequestTokenRepository()
 
@@ -220,6 +223,10 @@ app.post('/register-rnn', validateBody(RegisterRnnRequest), async (req: Request 
 
   const dto: RegisterRnnRequest = req.body
 
+  if (dto.rnn.length !== 13) {
+    throw new DomainException(ErrorCode.RNN_ERROR)
+  }
+
   try {
     await codefService.registerRNN(dto.rnn, dto.id, codefService.encryptPassword(dto.password))
 
@@ -245,6 +252,9 @@ app.post('/signup', validateBody(SignupRequest),
 
     const response = await codefService.requestSignup(dto)
 
+    if (dto.identity.length !== 9) {
+      throw new DomainException(ErrorCode.BIRTH_ERROR)
+    }
     const token: SignupRequestToken = {
       id: userId,
       twoWayInfo: {

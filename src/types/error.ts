@@ -114,5 +114,15 @@ export const ErrorCode = {
     code: 'PASSWORD_5_ERROR',
     message: '비밀번호 오류 5회 초과로 비밀번호 찾기가 필요합니다',
     success: false
+  },
+  RNN_ERROR: {
+    code: 'RNN_ERROR',
+    message: '유효하지 않은 주민등록번호입니다.',
+    success: false
+  },
+  BIRTH_ERROR: {
+    code: 'BIRTH_ERROR',
+    message: '유효하지 않은 생년월일입니다.',
+    success: false
   }
 }
